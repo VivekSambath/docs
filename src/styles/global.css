@@ -1,0 +1,44 @@
+@import "tailwindcss";
+
+/* Class-based dark mode so it can be toggled manually, not just via OS preference. */
+@custom-variant dark (&:where(.dark, .dark *));
+
+@layer base {
+  body {
+    @apply bg-neutral-50 text-neutral-950 antialiased dark:bg-neutral-950 dark:text-neutral-50;
+    font-size: 17px;
+    line-height: 1.55;
+    letter-spacing: -0.01em;
+  }
+
+  h1,
+  h2,
+  h3 {
+    @apply font-semibold tracking-tight;
+    line-height: 1.15;
+    margin: 0;
+  }
+
+  p {
+    margin: 0;
+  }
+
+  a {
+    color: inherit;
+  }
+
+  ul,
+  ol {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  ::selection {
+    @apply bg-neutral-950 text-neutral-50 dark:bg-neutral-50 dark:text-neutral-950;
+  }
+
+  #root {
+    @apply flex min-h-svh flex-col;
+  }
+}
