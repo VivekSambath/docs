@@ -1,5 +1,7 @@
 import type { DocSection } from "./articles";
+import { animationTimelineDoc } from "./css-docs/animation-timeline";
 import { contrastColorDoc } from "./css-docs/contrast-color";
+import { transitionsDoc } from "./css-docs/transitions";
 
 // --- CSS reference docs -----------------------------------------------------
 // A separate content model from `articles.ts`'s `Article` union: short,
@@ -21,7 +23,7 @@ export type CssDoc = {
   sections: DocSection[];
 };
 
-export const cssDocs: CssDoc[] = [contrastColorDoc];
+export const cssDocs: CssDoc[] = [contrastColorDoc, transitionsDoc, animationTimelineDoc];
 
 export function getCssDoc(slug: string): CssDoc | undefined {
   return cssDocs.find((doc) => doc.slug === slug);
