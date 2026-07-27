@@ -8,10 +8,15 @@
       name="description"
       content="A quiet, high-contrast, near-black and near-white site."
     />
-    <title>my-stuff</title>
+    <title>Web Docs</title>
     <script>
       (function () {
-        var stored = localStorage.getItem("theme");
+        var stored = null;
+        try {
+          stored = localStorage.getItem("theme");
+        } catch (e) {
+          // storage may be unavailable (e.g. a sandboxed preview) — fall back to system preference
+        }
         var prefersDark = window.matchMedia(
           "(prefers-color-scheme: dark)",
         ).matches;
@@ -20,8 +25,8 @@
         }
       })();
     </script>
-    <script type="module" crossorigin src="/docs/assets/index-C529BDIH.js"></script>
-    <link rel="stylesheet" crossorigin href="/docs/assets/index-Du-KVJTD.css">
+    <script type="module" crossorigin src="/docs/assets/index-pg1Oh3HH.js"></script>
+    <link rel="stylesheet" crossorigin href="/docs/assets/index-Bb5K84i9.css">
   </head>
   <body>
     <div id="root"></div>
