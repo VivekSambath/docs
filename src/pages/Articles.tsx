@@ -1,6 +1,7 @@
 import { Link } from "react-router-dom";
 import { articles, type Article } from "../content/articles";
 import { docIllustrations } from "../components/docIllustrations";
+import { ArrowRightIcon } from "../components/illustrations";
 
 function ArticleList({ items }: { items: Article[] }) {
   return (
@@ -10,21 +11,22 @@ function ArticleList({ items }: { items: Article[] }) {
         return (
           <li
             key={article.slug}
-            className="rounded-lg border border-neutral-200 dark:border-neutral-800"
+            className="rounded-lg border border-border"
           >
             <Link
               to={`/articles/${article.slug}`}
-              className="flex gap-5 px-6 py-6 no-underline transition-colors duration-150 hover:bg-neutral-100 dark:hover:bg-neutral-900"
+              className="group flex items-center gap-5 px-6 py-6 no-underline transition-colors duration-150 hover:bg-surface"
             >
               {Illustration && (
-                <Illustration className="mt-1 hidden h-12 w-12 shrink-0 text-neutral-400 dark:text-neutral-600 sm:block" />
+                <Illustration className="hidden h-12 w-12 shrink-0 self-start text-muted sm:block" />
               )}
-              <div className="min-w-0">
+              <div className="min-w-0 flex-1">
                 <h2 className="mb-2 text-xl">{article.title}</h2>
-                <p className="mb-3 text-neutral-500 dark:text-neutral-400">
+                <p className="mb-3 text-muted">
                   {article.excerpt}
                 </p>
               </div>
+              <ArrowRightIcon className="h-5 w-5 shrink-0 text-muted transition-transform duration-150 ease-out group-hover:translate-x-1" />
             </Link>
           </li>
         );
@@ -40,14 +42,14 @@ export default function Articles() {
   return (
     <section>
       <h1 className="mb-4 text-3xl">Articles</h1>
-      <p className="mb-10 text-neutral-500 dark:text-neutral-400">
+      <p className="mb-10 text-muted">
         Notes on how and why this site looks the way it does. More coming
         soon.
       </p>
 
       {docs.length > 0 && (
         <div className={rest.length > 0 ? "mb-14" : undefined}>
-          <h2 className="mb-4 text-sm font-semibold uppercase tracking-wide text-neutral-500 dark:text-neutral-400">
+          <h2 className="mb-4 text-sm font-semibold uppercase tracking-wide text-muted">
             Frontend Best Practices
           </h2>
           <ArticleList items={docs} />
@@ -55,7 +57,7 @@ export default function Articles() {
       )}
 
       {rest.length > 0 && (
-        <div className={docs.length > 0 ? "border-t border-neutral-200 pt-14 dark:border-neutral-800" : undefined}>
+        <div className={docs.length > 0 ? "border-t border-border pt-14" : undefined}>
           <ArticleList items={rest} />
         </div>
       )}

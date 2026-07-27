@@ -360,6 +360,16 @@ const simpleOnComplexHtml = () =>
       <div style="width:36px;height:36px;border-radius:50%;background:#0a0a0a;"></div>
     </div>`,
   );
+const complexOnSimpleHtml = () =>
+  page(
+    `<div style="width:140px;height:100px;border-radius:8px;background:#f5f5f5;display:flex;align-items:center;justify-content:center;">
+      <div style="position:relative;width:44px;height:44px;">
+        <div style="position:absolute;left:0;top:0;width:26px;height:26px;border-radius:50%;background:#0a0a0a;"></div>
+        <div style="position:absolute;right:0;bottom:0;width:22px;height:22px;border-radius:4px;background:#525252;transform:rotate(15deg);"></div>
+        <div style="position:absolute;left:14px;bottom:4px;width:18px;height:18px;border-radius:3px;border:2px solid #0a0a0a;"></div>
+      </div>
+    </div>`,
+  );
 
 // Rule 18 — keep container colours within brightness limits
 const brightnessTooMuchHtml = () =>
@@ -975,6 +985,11 @@ export const designPrinciples: DocArticle = {
       height: 130,
       caption: "12 is divisible by 1, 2, 3, 4, 6, and 12 — highlighted here every 4th column — so almost any column-span you'd want lines up evenly.",
     },
+    {
+      kind: "caniuse",
+      feature: "css-grid",
+      title: "CSS Grid Layout",
+    },
 
     { kind: "heading", text: "14. Spacing should go between points of high contrast" },
     {
@@ -1065,9 +1080,14 @@ export const designPrinciples: DocArticle = {
           status: "good",
           html: simpleOnComplexHtml,
         },
+        {
+          label: "Complex mark on simple background",
+          status: "good",
+          html: complexOnSimpleHtml,
+        },
       ],
       height: 150,
-      caption: "Same patterned background — the multi-shape mark fights it for attention; a single simple circle sits calmly on top instead.",
+      caption: "The first pair stacks complexity on complexity and the two compete; the other two each pair complexity with simplicity — a simple mark on the same striped background, or that same multi-shape mark on a plain one — and both read calmly.",
     },
 
     { kind: "heading", text: "18. Keep container colours within brightness limits" },
@@ -1164,6 +1184,12 @@ export const designPrinciples: DocArticle = {
       ],
       height: 210,
       caption: "The unconstrained paragraph stretches edge to edge; the second one wraps at a length the eye can track line to line.",
+    },
+    {
+      kind: "caniuse",
+      feature: "ch-unit",
+      title: "ch unit",
+      caption: "The measure above is set in ch — the width of the '0' character in the current font — rather than px, so it scales with the typeface.",
     },
 
     { kind: "heading", text: "22. Make horizontal padding twice the vertical padding in buttons" },
@@ -1392,6 +1418,12 @@ export const designPrinciples: DocArticle = {
       kind: "callout",
       variant: "note",
       text: "The accent is deliberately a single hue. A second accent color for e.g. warning or success states would undercut rule 3's point — contrast, not color, is what should carry meaning.",
+    },
+    {
+      kind: "caniuse",
+      feature: "css-focus-visible",
+      title: ":focus-visible",
+      caption: "The hover demo above pairs :hover with :focus-visible rather than :focus, so the accent only shows on keyboard focus, not on every mouse click.",
     },
 
     { kind: "heading", text: "30. Motion is short and eases out" },

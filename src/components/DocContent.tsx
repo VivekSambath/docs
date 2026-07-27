@@ -51,7 +51,7 @@ function CodeBlock({
 }) {
   return (
     <div className="mt-8">
-      <div className="flex items-center justify-between rounded-t-md border border-b-0 border-neutral-200 bg-neutral-100 px-4 py-2 text-xs text-neutral-500 dark:border-neutral-800 dark:bg-neutral-900 dark:text-neutral-400">
+      <div className="flex items-center justify-between rounded-t-md border border-b-0 border-border bg-surface px-4 py-2 text-xs text-muted">
         <span className="font-mono uppercase tracking-wide">{language}</span>
         {label && (
           <span className="font-medium">
@@ -60,14 +60,14 @@ function CodeBlock({
         )}
       </div>
       <pre
-        className={`overflow-x-auto border-x border-t border-neutral-200 bg-neutral-50 p-4 text-sm dark:border-neutral-800 dark:bg-neutral-900 ${tailwind ? "" : "rounded-b-md border-b"}`}
+        className={`overflow-x-auto border-x border-t border-border bg-bg p-4 text-sm ${tailwind ? "" : "rounded-b-md border-b"}`}
       >
         <code className="font-mono">{code}</code>
       </pre>
       {tailwind && (
-        <pre className="overflow-x-auto rounded-b-md border border-neutral-200 bg-neutral-50 p-4 text-sm dark:border-neutral-800 dark:bg-neutral-900">
-          <code className="font-mono text-neutral-500 dark:text-neutral-400">
-            <span className="mr-2 text-[10px] font-semibold uppercase tracking-wide text-neutral-400 dark:text-neutral-600">
+        <pre className="overflow-x-auto rounded-b-md border border-border bg-bg p-4 text-sm">
+          <code className="font-mono text-muted">
+            <span className="mr-2 text-[10px] font-semibold uppercase tracking-wide text-muted">
               Tailwind
             </span>
             {tailwind}
@@ -75,7 +75,7 @@ function CodeBlock({
         </pre>
       )}
       {caption && (
-        <p className="mt-2 text-sm text-neutral-500 dark:text-neutral-400">{caption}</p>
+        <p className="mt-2 text-sm text-muted">{caption}</p>
       )}
     </div>
   );
@@ -98,7 +98,7 @@ function DemoBlock({ panes, toggle, height = 220, caption }: Extract<DocSection,
           type="button"
           onClick={() => setOn((current) => !current)}
           aria-pressed={on}
-          className="mb-3 inline-flex items-center gap-2 rounded-md border border-neutral-200 px-3 py-1.5 text-xs font-medium text-neutral-700 transition-colors duration-150 hover:bg-neutral-950 hover:text-neutral-50 dark:border-neutral-800 dark:text-neutral-300 dark:hover:bg-neutral-50 dark:hover:text-neutral-950"
+          className="mb-3 inline-flex items-center gap-2 rounded-md border border-border px-3 py-1.5 text-xs font-medium text-body transition-colors duration-150 hover:bg-fg hover:text-fg-invert"
         >
           <span aria-hidden="true">{on ? "☑" : "☐"}</span>
           {toggle.label}
@@ -107,21 +107,21 @@ function DemoBlock({ panes, toggle, height = 220, caption }: Extract<DocSection,
       <div className={`grid gap-6 ${gridClass}`}>
         {panes.map((pane, paneIndex) => (
           <div key={paneIndex} className="min-w-0">
-            <div className="flex items-center justify-between rounded-t-md border border-b-0 border-neutral-200 bg-neutral-100 px-4 py-2 text-xs text-neutral-500 dark:border-neutral-800 dark:bg-neutral-900 dark:text-neutral-400">
+            <div className="flex items-center justify-between rounded-t-md border border-b-0 border-border bg-surface px-4 py-2 text-xs text-muted">
               <span className="font-medium">{pane.label}</span>
               {pane.status && (
                 <span className="font-medium">{demoStatusLabel[pane.status]}</span>
               )}
             </div>
             {pane.code && (
-              <pre className="overflow-x-auto border-x border-t border-neutral-200 bg-neutral-50 p-3 text-xs dark:border-neutral-800 dark:bg-neutral-900">
+              <pre className="overflow-x-auto border-x border-t border-border bg-bg p-3 text-xs">
                 <code className="font-mono">{pane.code}</code>
               </pre>
             )}
             {pane.tailwind && (
-              <pre className="overflow-x-auto border-x border-t border-neutral-200 bg-neutral-50 p-3 text-xs dark:border-neutral-800 dark:bg-neutral-900">
-                <code className="font-mono text-neutral-500 dark:text-neutral-400">
-                  <span className="mr-2 text-[10px] font-semibold uppercase tracking-wide text-neutral-400 dark:text-neutral-600">
+              <pre className="overflow-x-auto border-x border-t border-border bg-bg p-3 text-xs">
+                <code className="font-mono text-muted">
+                  <span className="mr-2 text-[10px] font-semibold uppercase tracking-wide text-muted">
                     Tailwind
                   </span>
                   {pane.tailwind}
@@ -134,13 +134,13 @@ function DemoBlock({ panes, toggle, height = 220, caption }: Extract<DocSection,
               srcDoc={pane.html(on)}
               sandbox=""
               style={{ height }}
-              className="block w-full rounded-b-md border border-neutral-200 bg-neutral-50 dark:border-neutral-800"
+              className="block w-full rounded-b-md border border-border bg-bg"
             />
           </div>
         ))}
       </div>
       {caption && (
-        <figcaption className="mt-2 text-sm text-neutral-500 dark:text-neutral-400">
+        <figcaption className="mt-2 text-sm text-muted">
           {caption}
         </figcaption>
       )}
@@ -148,29 +148,54 @@ function DemoBlock({ panes, toggle, height = 220, caption }: Extract<DocSection,
   );
 }
 
-function CaniuseEmbed({ feature, title, caption }: Extract<DocSection, { kind: "caniuse" }>) {
+function CaniuseEmbed({ feature, title, caption, variant = "embed" }: Extract<DocSection, { kind: "caniuse" }>) {
   return (
     <figure className="mt-8">
-      <div className="flex items-center justify-between rounded-t-md border border-b-0 border-neutral-200 bg-neutral-100 px-4 py-2 text-xs text-neutral-500 dark:border-neutral-800 dark:bg-neutral-900 dark:text-neutral-400">
+      <div className="flex items-center justify-between rounded-t-md border border-b-0 border-border bg-surface px-4 py-2 text-xs text-muted">
         <span className="font-medium">{title ?? feature}</span>
         <a
           href={`https://caniuse.com/${feature}`}
           target="_blank"
           rel="noreferrer"
-          className="font-mono text-[11px] underline decoration-neutral-400 underline-offset-2 hover:text-neutral-950 dark:hover:text-neutral-50"
+          className="font-mono text-[11px] underline decoration-neutral-400 underline-offset-2 hover:text-fg"
         >
           caniuse.com ↗
         </a>
       </div>
-      <iframe
-        title={`Can I use: ${title ?? feature}`}
-        src={`https://caniuse.bitsofco.de/embed/index.html?feat=${feature}&periods=future_1,current,past_1,past_2`}
-        loading="lazy"
-        style={{ height: 300 }}
-        className="block w-full rounded-b-md border border-neutral-200 bg-white dark:border-neutral-800"
-      />
+      {variant === "image" ? (
+        <img
+          alt={`Can I use: ${title ?? feature} — browser support table`}
+          src={`https://caniuse.bitsofco.de/image/${feature}.png`}
+          loading="lazy"
+          className="block w-full rounded-b-md border border-border bg-white"
+        />
+      ) : variant === "link" ? (
+        <a
+          href={`https://caniuse.com/${feature}`}
+          target="_blank"
+          rel="noreferrer"
+          className="flex items-center justify-between gap-4 rounded-b-md border border-border bg-bg px-4 py-4 no-underline transition-colors duration-150 hover:bg-surface"
+        >
+          <span className="text-sm text-body">
+            View live browser support data for{" "}
+            <span className="font-mono font-medium text-fg">{title ?? feature}</span>{" "}
+            on caniuse.com
+          </span>
+          <span aria-hidden="true" className="shrink-0 text-muted">
+            &rarr;
+          </span>
+        </a>
+      ) : (
+        <iframe
+          title={`Can I use: ${title ?? feature}`}
+          src={`https://caniuse.bitsofco.de/embed/index.html?feat=${feature}&periods=future_1,current,past_1,past_2`}
+          loading="lazy"
+          style={{ height: 300 }}
+          className="block w-full rounded-b-md border border-border bg-white"
+        />
+      )}
       {caption && (
-        <figcaption className="mt-2 text-sm text-neutral-500 dark:text-neutral-400">
+        <figcaption className="mt-2 text-sm text-muted">
           {caption}
         </figcaption>
       )}
@@ -182,21 +207,21 @@ function MindMap({ root, branches, caption }: Extract<DocSection, { kind: "mindm
   return (
     <figure className="mt-8">
       <div className="flex flex-col items-center">
-        <div className="rounded-md border border-neutral-950 bg-neutral-950 px-4 py-2 text-center text-sm font-semibold text-neutral-50 dark:border-neutral-50 dark:bg-neutral-50 dark:text-neutral-950">
+        <div className="rounded-md border border-fg bg-fg px-4 py-2 text-center text-sm font-semibold text-fg-invert">
           {root}
         </div>
-        <div className="h-6 w-px bg-neutral-300 dark:bg-neutral-700" />
-        <div className="mx-auto flex w-fit flex-wrap justify-center gap-x-8 gap-y-6 border-t border-neutral-300 dark:border-neutral-700">
+        <div className="h-6 w-px bg-divider" />
+        <div className="mx-auto flex w-fit flex-wrap justify-center gap-x-8 gap-y-6 border-t border-divider">
           {branches.map((branch, branchIndex) => (
             <div key={branchIndex} className="flex w-44 flex-col items-center text-center">
-              <div className="h-4 w-px bg-neutral-300 dark:bg-neutral-700" />
-              <div className="rounded-md border border-neutral-200 px-3 py-2 text-sm font-medium dark:border-neutral-800">
+              <div className="h-4 w-px bg-divider" />
+              <div className="rounded-md border border-border px-3 py-2 text-sm font-medium">
                 {branch.label}
               </div>
               {branch.children && branch.children.length > 0 && (
                 <ul className="mt-2 flex flex-col gap-1">
                   {branch.children.map((child, childIndex) => (
-                    <li key={childIndex} className="text-xs text-neutral-500 dark:text-neutral-400">
+                    <li key={childIndex} className="text-xs text-muted">
                       {child}
                     </li>
                   ))}
@@ -207,7 +232,7 @@ function MindMap({ root, branches, caption }: Extract<DocSection, { kind: "mindm
         </div>
       </div>
       {caption && (
-        <figcaption className="mt-6 text-center text-sm text-neutral-500 dark:text-neutral-400">
+        <figcaption className="mt-6 text-center text-sm text-muted">
           {caption}
         </figcaption>
       )}
@@ -237,7 +262,7 @@ export default function DocContent({ sections }: { sections: DocSection[] }) {
               level === 2
                 ? index === 0
                   ? "text-3xl"
-                  : "mt-20 border-t border-neutral-200 pt-10 text-3xl dark:border-neutral-800"
+                  : "mt-20 border-t border-border pt-10 text-3xl"
                 : "mt-10 text-xl";
             const headingContent = numbered ? (
               <span className="flex items-center gap-4">
@@ -264,7 +289,7 @@ export default function DocContent({ sections }: { sections: DocSection[] }) {
             return (
               <p
                 key={index}
-                className="mt-8 max-w-prose text-neutral-700 dark:text-neutral-300"
+                className="mt-8 max-w-prose text-body"
               >
                 {section.text}
               </p>
@@ -273,11 +298,11 @@ export default function DocContent({ sections }: { sections: DocSection[] }) {
           case "ascii":
             return (
               <figure key={index} className="mt-6">
-                <pre className="overflow-x-auto rounded-md border border-neutral-200 bg-neutral-100/60 p-4 font-mono text-xs leading-relaxed text-neutral-700 dark:border-neutral-800 dark:bg-neutral-900/60 dark:text-neutral-300">
+                <pre className="overflow-x-auto rounded-md border border-border bg-surface/60 p-4 font-mono text-xs leading-relaxed text-body">
                   {section.art}
                 </pre>
                 {section.caption && (
-                  <figcaption className="mt-2 text-sm text-neutral-500 dark:text-neutral-400">
+                  <figcaption className="mt-2 text-sm text-muted">
                     {section.caption}
                   </figcaption>
                 )}
@@ -300,13 +325,13 @@ export default function DocContent({ sections }: { sections: DocSection[] }) {
             return (
               <div
                 key={index}
-                className="mt-8 flex gap-3 rounded-md border-l-4 border-neutral-950 bg-neutral-100/60 py-3 pl-4 pr-4 dark:border-neutral-50 dark:bg-neutral-900/60"
+                className="mt-8 flex gap-3 rounded-md border-l-4 border-fg bg-surface/60 py-3 pl-4 pr-4"
               >
-                <span className="mt-0.5 h-4 w-4 shrink-0 text-neutral-950 dark:text-neutral-50">
+                <span className="mt-0.5 h-4 w-4 shrink-0 text-fg">
                   {calloutIcon[section.variant]}
                 </span>
-                <p className="text-sm text-neutral-700 dark:text-neutral-300">
-                  <span className="font-semibold text-neutral-950 dark:text-neutral-50">
+                <p className="text-sm text-body">
+                  <span className="font-semibold text-fg">
                     {calloutLabel[section.variant]}:
                   </span>{" "}
                   {section.text}
@@ -320,9 +345,9 @@ export default function DocContent({ sections }: { sections: DocSection[] }) {
                 {section.items.map((item, itemIndex) => (
                   <li
                     key={itemIndex}
-                    className="flex gap-3 text-neutral-700 dark:text-neutral-300"
+                    className="flex gap-3 text-body"
                   >
-                    <span className="font-mono text-sm text-neutral-500 dark:text-neutral-400">
+                    <span className="font-mono text-sm text-muted">
                       {itemIndex + 1}.
                     </span>
                     <span>{item}</span>
@@ -334,9 +359,9 @@ export default function DocContent({ sections }: { sections: DocSection[] }) {
                 {section.items.map((item, itemIndex) => (
                   <li
                     key={itemIndex}
-                    className="flex gap-3 text-neutral-700 dark:text-neutral-300"
+                    className="flex gap-3 text-body"
                   >
-                    <span className="text-neutral-400 dark:text-neutral-600">&bull;</span>
+                    <span className="text-muted">&bull;</span>
                     <span>{item}</span>
                   </li>
                 ))}
@@ -349,13 +374,13 @@ export default function DocContent({ sections }: { sections: DocSection[] }) {
                 {[section.before, section.after].map((side, sideIndex) => (
                   <div
                     key={sideIndex}
-                    className="min-w-0 rounded-md border border-neutral-200 p-4 dark:border-neutral-800"
+                    className="min-w-0 rounded-md border border-border p-4"
                   >
-                    <p className="mb-3 text-sm font-semibold text-neutral-950 dark:text-neutral-50">
+                    <p className="mb-3 text-sm font-semibold text-fg">
                       {side.label}
                     </p>
                     {side.code && (
-                      <pre className="mb-3 overflow-x-auto rounded-md border border-neutral-200 bg-neutral-100/60 p-3 text-xs dark:border-neutral-800 dark:bg-neutral-900/60">
+                      <pre className="mb-3 overflow-x-auto rounded-md border border-border bg-surface/60 p-3 text-xs">
                         <code className="font-mono">{side.code}</code>
                       </pre>
                     )}
@@ -363,9 +388,9 @@ export default function DocContent({ sections }: { sections: DocSection[] }) {
                       {side.points.map((point, pointIndex) => (
                         <li
                           key={pointIndex}
-                          className="flex gap-2 text-sm text-neutral-700 dark:text-neutral-300"
+                          className="flex gap-2 text-sm text-body"
                         >
-                          <span className="text-neutral-400 dark:text-neutral-600">&bull;</span>
+                          <span className="text-muted">&bull;</span>
                           <span>{point}</span>
                         </li>
                       ))}
@@ -377,14 +402,14 @@ export default function DocContent({ sections }: { sections: DocSection[] }) {
 
           case "table":
             return (
-              <div key={index} className="mt-8 overflow-x-auto rounded-md border border-neutral-200 dark:border-neutral-800">
+              <div key={index} className="mt-8 overflow-x-auto rounded-md border border-border">
                 <table className="w-full border-collapse text-sm">
                   <thead>
-                    <tr className="border-b border-neutral-200 dark:border-neutral-800">
+                    <tr className="border-b border-border">
                       {section.headers.map((header, headerIndex) => (
                         <th
                           key={headerIndex}
-                          className="px-4 py-2 text-left font-semibold text-neutral-950 dark:text-neutral-50"
+                          className="px-4 py-2 text-left font-semibold text-fg"
                         >
                           {header}
                         </th>
@@ -395,12 +420,12 @@ export default function DocContent({ sections }: { sections: DocSection[] }) {
                     {section.rows.map((row, rowIndex) => (
                       <tr
                         key={rowIndex}
-                        className="border-b border-neutral-200 last:border-b-0 dark:border-neutral-800"
+                        className="border-b border-border last:border-b-0"
                       >
                         {row.map((cell, cellIndex) => (
                           <td
                             key={cellIndex}
-                            className="px-4 py-2 text-neutral-700 dark:text-neutral-300"
+                            className="px-4 py-2 text-body"
                           >
                             {cell}
                           </td>

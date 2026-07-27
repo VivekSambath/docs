@@ -76,6 +76,15 @@ export type DocCaniuse = {
   /** Display label above the embed; defaults to the raw feature slug. */
   title?: string;
   caption?: string;
+  /**
+   * "embed" (default) is the live, interactive iframe. "image" renders a
+   * static PNG snapshot from the same service instead. "link" renders a
+   * plain bordered card linking out to caniuse.com — no third-party embed
+   * fetch at all; use this for feature slugs the embed service doesn't
+   * have data for (e.g. some mdn-* BCD-sourced slugs return "Feature not
+   * found" in both the embed and image variants).
+   */
+  variant?: "embed" | "image" | "link";
 };
 
 export type DocSection =

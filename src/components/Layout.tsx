@@ -8,7 +8,7 @@ export default function Layout() {
   const location = useLocation();
 
   return (
-    <div className="mx-auto flex min-h-svh w-full max-w-360 flex-col border-x border-neutral-200 dark:border-neutral-800">
+    <div className="mx-auto flex min-h-svh w-full max-w-360 flex-col border-x border-border">
       <Header />
       <div className="flex flex-1">
         <Sidebar />

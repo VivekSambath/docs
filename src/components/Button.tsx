@@ -9,12 +9,10 @@ const base =
   "inline-flex cursor-pointer items-center justify-center gap-2 rounded-md px-5 py-3 text-sm font-medium no-underline transition-colors duration-150";
 
 const variants = {
-  solid:
-    "border border-neutral-950 bg-neutral-950 text-neutral-50 hover:bg-neutral-50 hover:text-neutral-950 dark:border-neutral-50 dark:bg-neutral-50 dark:text-neutral-950 dark:hover:bg-neutral-950 dark:hover:text-neutral-50",
-  outline:
-    "border border-neutral-950 bg-transparent text-neutral-950 hover:bg-neutral-950 hover:text-neutral-50 dark:border-neutral-50 dark:text-neutral-50 dark:hover:bg-neutral-50 dark:hover:text-neutral-950",
+  solid: "border border-fg bg-fg text-fg-invert hover:bg-fg-invert hover:text-fg",
+  outline: "border border-fg bg-transparent text-fg hover:bg-fg hover:text-fg-invert",
   shadow:
-    "border-0 bg-neutral-50 text-neutral-950 shadow-lg shadow-neutral-950/20 transition-shadow hover:shadow-md dark:bg-neutral-900 dark:text-neutral-50 dark:shadow-black/60",
+    "border-0 bg-bg text-fg shadow-lg shadow-(--color-btn-shadow) transition-shadow hover:shadow-md",
 };
 
 type ButtonAsLink = CommonProps & LinkProps;

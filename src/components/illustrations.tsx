@@ -8,10 +8,12 @@ import type { ReactNode } from "react";
 
 function Svg({
   viewBox,
+  strokeWidth = 1.5,
   className,
   children,
 }: {
   viewBox: string;
+  strokeWidth?: number;
   className?: string;
   children: ReactNode;
 }) {
@@ -20,7 +22,7 @@ function Svg({
       viewBox={viewBox}
       fill="none"
       stroke="currentColor"
-      strokeWidth={1.5}
+      strokeWidth={strokeWidth}
       strokeLinecap="round"
       strokeLinejoin="round"
       aria-hidden="true"
@@ -126,6 +128,91 @@ export function MotionIcon({ className }: { className?: string }) {
     <Svg viewBox="0 0 32 32" className={className}>
       <path d="M4 16h24" strokeWidth="2.2" strokeDasharray="2 5" opacity="0.5" />
       <circle cx="21" cy="16" r="4" fill="currentColor" stroke="none" />
+    </Svg>
+  );
+}
+
+// --- Small nav / UI icons ----------------------------------------------------
+// 20x20, slightly heavier stroke than the illustrations above so they hold up
+// at 16-18px next to text. Same stroke-only, currentColor language (rule 28
+// keeps these muted relative to their label wherever they're paired with one).
+
+/** A doorway with a peaked roof line — used for the Home nav item. */
+export function HomeIcon({ className }: { className?: string }) {
+  return (
+    <Svg viewBox="0 0 20 20" strokeWidth={1.6} className={className}>
+      <path d="M3 9.5 10 3l7 6.5" strokeLinejoin="round" />
+      <path d="M5 8.5V17h10V8.5" strokeLinejoin="round" />
+      <path d="M8 17v-5h4v5" strokeLinejoin="round" />
+    </Svg>
+  );
+}
+
+/** A stacked pair of ruled pages — used for the Articles nav item. */
+export function ArticlesIcon({ className }: { className?: string }) {
+  return (
+    <Svg viewBox="0 0 20 20" strokeWidth={1.6} className={className}>
+      <rect x="4.5" y="2.5" width="11" height="14" rx="1.5" />
+      <path d="M7 6.5h6M7 9.5h6M7 12.5h3.5" />
+    </Svg>
+  );
+}
+
+/** Code brackets — used for the CSS Docs nav item. */
+export function CodeIcon({ className }: { className?: string }) {
+  return (
+    <Svg viewBox="0 0 20 20" strokeWidth={1.6} className={className}>
+      <path d="M7 5 2.5 10 7 15" strokeLinejoin="round" />
+      <path d="M13 5l4.5 5-4.5 5" strokeLinejoin="round" />
+    </Svg>
+  );
+}
+
+/** A short right-pointing arrow — the "go" affordance on list cards and CTAs. */
+export function ArrowRightIcon({ className }: { className?: string }) {
+  return (
+    <Svg viewBox="0 0 20 20" strokeWidth={1.8} className={className}>
+      <path d="M4 10h12" />
+      <path d="M11 5.5 15.5 10 11 14.5" strokeLinejoin="round" />
+    </Svg>
+  );
+}
+
+/** An upward arrow over a baseline — used by Footer's back-to-top link. */
+export function ArrowUpIcon({ className }: { className?: string }) {
+  return (
+    <Svg viewBox="0 0 20 20" strokeWidth={1.8} className={className}>
+      <path d="M10 15.5V5" />
+      <path d="M5.5 9.5 10 5l4.5 4.5" strokeLinejoin="round" />
+    </Svg>
+  );
+}
+
+/** Sun glyph — ThemeToggle's light-mode state. */
+export function SunIcon({ className }: { className?: string }) {
+  return (
+    <Svg viewBox="0 0 20 20" strokeWidth={1.6} className={className}>
+      <circle cx="10" cy="10" r="4" />
+      <path d="M10 1.5v2M10 16.5v2M18.5 10h-2M3.5 10h-2M15.7 4.3l-1.4 1.4M5.7 14.3l-1.4 1.4M15.7 15.7l-1.4-1.4M5.7 5.7 4.3 4.3" />
+    </Svg>
+  );
+}
+
+/** Crescent moon — ThemeToggle's dark-mode state. */
+export function MoonIcon({ className }: { className?: string }) {
+  return (
+    <Svg viewBox="0 0 20 20" strokeWidth={1.6} className={className}>
+      <path d="M16.5 12.3A7 7 0 1 1 7.7 3.5a5.6 5.6 0 0 0 8.8 8.8Z" strokeLinejoin="round" />
+    </Svg>
+  );
+}
+
+/** A filled swatch beside an outlined one — used for the contrast-color CSS doc. */
+export function SwatchIcon({ className }: { className?: string }) {
+  return (
+    <Svg viewBox="0 0 48 48" className={className}>
+      <rect x="4" y="12" width="20" height="20" rx="4" fill="currentColor" stroke="none" opacity="0.55" />
+      <rect x="22" y="18" width="20" height="20" rx="4" />
     </Svg>
   );
 }

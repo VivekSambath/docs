@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { SunIcon, MoonIcon } from "./illustrations";
 
 type Theme = "light" | "dark";
 
@@ -23,9 +24,19 @@ export default function ThemeToggle() {
       type="button"
       onClick={() => setTheme((current) => (current === "dark" ? "light" : "dark"))}
       aria-label="Toggle color theme"
-      className="inline-flex h-8 w-8 items-center justify-center rounded-md border border-neutral-200 text-sm transition-colors duration-150 hover:bg-neutral-950 hover:text-neutral-50 dark:border-neutral-800 dark:hover:bg-neutral-50 dark:hover:text-neutral-950"
+      className="group inline-flex h-8 w-8 items-center justify-center overflow-hidden rounded-md border border-border transition-colors duration-150 hover:bg-fg hover:text-fg-invert"
     >
-      {theme === "dark" ? "☀" : "☾"}
+      <span
+        className="grid transition-transform duration-300 ease-out"
+        style={{ transform: theme === "dark" ? "rotate(0deg)" : "rotate(-100deg)" }}
+      >
+        <MoonIcon
+          className={`col-start-1 row-start-1 h-4 w-4 transition-opacity duration-300 ease-out group-hover:scale-110 ${theme === "dark" ? "opacity-100" : "opacity-0"}`}
+        />
+        <SunIcon
+          className={`col-start-1 row-start-1 h-4 w-4 transition-opacity duration-300 ease-out group-hover:scale-110 ${theme === "dark" ? "opacity-0" : "opacity-100"}`}
+        />
+      </span>
     </button>
   );
 }
