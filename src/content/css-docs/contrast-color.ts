@@ -320,6 +320,7 @@ export const contrastColorDoc: CssDoc = {
       kind: "code",
       language: "css",
       code: "color: contrast-color(<color>);\n\n/* example */\n.tag {\n  background-color: var(--tag-color);\n  color: contrast-color(var(--tag-color));\n}",
+      tailwind: '<div class="bg-(--tag-color) text-[contrast-color(var(--tag-color))]">',
     },
     {
       kind: "callout",
@@ -339,6 +340,7 @@ export const contrastColorDoc: CssDoc = {
         {
           label: "color: contrast-color(background)",
           code: ".swatch {\n  background: var(--bg);\n  color: contrast-color(var(--bg));\n}",
+          tailwind: '<div class="bg-(--bg) text-[contrast-color(var(--bg))]">',
           html: autoContrastHtml,
         },
       ],
@@ -359,12 +361,14 @@ export const contrastColorDoc: CssDoc = {
           label: "color: white",
           status: "bad",
           code: ".swatch {\n  color: white;\n}",
+          tailwind: '<div class="text-white">',
           html: () => swatchesHtml("fixed"),
         },
         {
           label: "color: contrast-color(...)",
           status: "good",
           code: ".swatch {\n  color: contrast-color(var(--bg));\n}",
+          tailwind: '<div class="text-[contrast-color(var(--bg))]">',
           html: () => swatchesHtml("auto"),
         },
       ],
@@ -382,6 +386,7 @@ export const contrastColorDoc: CssDoc = {
       kind: "code",
       language: "css",
       code: ".tag {\n  color: var(--tag-color);\n  background: contrast-color(var(--tag-color));\n}",
+      tailwind: '<div class="text-(--tag-color) bg-[contrast-color(var(--tag-color))]">',
     },
     {
       kind: "demo",
@@ -390,6 +395,7 @@ export const contrastColorDoc: CssDoc = {
         {
           label: "background: contrast-color(color)",
           code: ".swatch {\n  color: var(--fg);\n  background: contrast-color(var(--fg));\n}",
+          tailwind: '<div class="text-(--fg) bg-[contrast-color(var(--fg))]">',
           html: invertedContrastHtml,
         },
       ],
@@ -404,12 +410,14 @@ export const contrastColorDoc: CssDoc = {
           label: "background: white",
           status: "bad",
           code: ".swatch {\n  background: white;\n}",
+          tailwind: '<div class="bg-white">',
           html: () => invertedSwatchesHtml("fixed"),
         },
         {
           label: "background: contrast-color(...)",
           status: "good",
           code: ".swatch {\n  background: contrast-color(var(--fg));\n}",
+          tailwind: '<div class="bg-[contrast-color(var(--fg))]">',
           html: () => invertedSwatchesHtml("auto"),
         },
       ],
@@ -428,6 +436,17 @@ export const contrastColorDoc: CssDoc = {
       language: "css",
       code: ".tag {\n  background-color: var(--tag-color);\n  color: white; /* fallback if contrast-color() isn't supported */\n  color: contrast-color(var(--tag-color));\n}",
     },
+    {
+      kind: "callout",
+      variant: "warning",
+      text: "This particular pattern doesn't translate to two Tailwind utility classes (e.g. text-white text-[contrast-color(...)]) — Tailwind doesn't guarantee its generated CSS preserves the order you wrote the classes in, so the \"second declaration wins\" trick isn't reliable. Write the fallback pair as plain CSS (an arbitrary property covering both declarations, or a small @layer utilities rule) instead.",
+    },
+    {
+      kind: "code",
+      language: "css",
+      code: ".tag {\n  @apply bg-(--tag-color);\n  color: white; /* fallback */\n  color: contrast-color(var(--tag-color));\n}",
+      caption: "If you want this driven from Tailwind anyway, keep the two-declaration fallback in a plain CSS rule (optionally reached via @apply for the rest of the class) rather than as two competing utility classes.",
+    },
 
     { kind: "heading", text: "Example: driving it from a theme variable" },
     {
@@ -441,6 +460,7 @@ export const contrastColorDoc: CssDoc = {
         {
           label: "background: var(--accent)",
           code: ":root {\n  --accent: var(--color-accent);\n}\n\n.btn {\n  background: var(--accent);\n  color: white;\n  color: contrast-color(var(--accent));\n}",
+          tailwind: '<div class="bg-(--accent) text-[contrast-color(var(--accent))]">',
           html: accentHtml,
         },
       ],
@@ -470,6 +490,7 @@ export const contrastColorDoc: CssDoc = {
         {
           label: "color: contrast-color(#2277d3)",
           status: "good",
+          tailwind: '<div class="text-[contrast-color(#2277d3)]">',
           html: () => midToneHtml("auto"),
         },
         {
@@ -489,12 +510,33 @@ export const contrastColorDoc: CssDoc = {
         {
           label: "Points 2 and 3 together",
           code: ".avatar {\n  --user-color: var(--cms-accent); /* not under your control */\n  background: light-dark(#fff, #111); /* your own theme colors */\n  border-color: var(--user-color);\n  box-shadow: 0 0 0 3px contrast-color(var(--user-color));\n}",
+          tailwind: '<div class="bg-(--avatar-bg) border-(--user-color) shadow-[0_0_0_3px_contrast-color(var(--user-color))]">',
           html: avatarThemeHtml,
         },
       ],
       height: 170,
       caption:
         "The ring color tracks contrast-color(--user-color) and stays put as you toggle — it only depends on the CMS accent, not the site theme. The avatar's own background is the one thing that flips, via light-dark() reading a real color-scheme change, not a simulated one.",
+    },
+
+    { kind: "heading", text: "Using it with Tailwind" },
+    {
+      kind: "paragraph",
+      text: "Tailwind v4 has no dedicated utility for contrast-color() — it's too new and too dynamic (the output depends on a runtime value, not a fixed design-token). Reach for arbitrary values instead: bracket syntax accepts any raw CSS value, function calls included, as long as spaces become underscores.",
+    },
+    {
+      kind: "code",
+      language: "html",
+      code: '<!-- background from a CSS custom property, text derived from it -->\n<div class="bg-(--tag-color) text-[contrast-color(var(--tag-color))]">\n  Tag label\n</div>',
+      caption: "bg-(--tag-color) is Tailwind v4's shorthand for bg-[var(--tag-color)]; text-[contrast-color(...)] is a plain arbitrary value, since Tailwind has no contrast-color-aware utility to shorten it further.",
+    },
+    {
+      kind: "list",
+      items: [
+        "Any Tailwind utility that maps to a <color>-valued property works the same way: bg-[contrast-color(...)], border-[contrast-color(...)], fill-[contrast-color(...)], shadow-[0_0_0_3px_contrast-color(...)] — swap the utility prefix, keep the arbitrary value.",
+        "Multi-word arbitrary values need underscores where you'd normally write a space or comma-separated function argument list stays as-is: shadow-[0_0_0_3px_contrast-color(var(--user-color))] renders as box-shadow: 0 0 0 3px contrast-color(var(--user-color)).",
+        "The two-declaration fallback trick (plain color, then contrast-color() overriding it) needs actual CSS source order to work — see the callout above. Two Tailwind utility classes for the same property don't reliably preserve that order, so keep that specific pattern in a CSS rule rather than the class list.",
+      ],
     },
 
     { kind: "heading", text: "Can I use" },

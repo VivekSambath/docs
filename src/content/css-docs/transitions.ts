@@ -216,6 +216,7 @@ export const transitionsDoc: CssDoc = {
       kind: "code",
       language: "css",
       code: "/* shorthand: property duration timing-function delay */\ntransition: background-color 200ms ease-out;\ntransition: background-color 200ms ease-out, transform 150ms ease-in;\n\n/* or the four longhands separately */\ntransition-property: background-color;\ntransition-duration: 200ms;\ntransition-timing-function: ease-out;\ntransition-delay: 0ms;",
+      tailwind: '<div class="transition-colors duration-200 ease-out">',
     },
     {
       kind: "table",
@@ -234,12 +235,14 @@ export const transitionsDoc: CssDoc = {
           label: "no transition",
           status: "bad",
           code: ".swatch:hover { background: #1e3a8a; }",
+          tailwind: '<div class="hover:bg-blue-900">',
           html: () => snapVsTransitionHtml(false),
         },
         {
           label: "transition: background-color 220ms",
           status: "good",
           code: ".swatch {\n  transition: background-color 220ms ease-out;\n}\n.swatch:hover { background: #1e3a8a; }",
+          tailwind: '<div class="transition-colors duration-220 ease-out hover:bg-blue-900">',
           html: () => snapVsTransitionHtml(true),
         },
       ],
@@ -258,16 +261,19 @@ export const transitionsDoc: CssDoc = {
         {
           label: "linear",
           code: "transition: transform 900ms linear;",
+          tailwind: '<div class="transition-transform duration-900 ease-linear">',
           html: () => easingHtml("linear", "linear"),
         },
         {
           label: "ease-out",
           code: "transition: transform 900ms ease-out;",
+          tailwind: '<div class="transition-transform duration-900 ease-out">',
           html: () => easingHtml("ease-out", "ease-out"),
         },
         {
           label: "cubic-bezier (overshoot)",
           code: "transition: transform 900ms cubic-bezier(.34, 1.56, .64, 1);",
+          tailwind: '<div class="transition-transform duration-900 ease-[cubic-bezier(.34,1.56,.64,1)]">',
           html: () => easingHtml("cubic-bezier(.34, 1.56, .64, 1)", "bouncy"),
         },
       ],
@@ -284,6 +290,8 @@ export const transitionsDoc: CssDoc = {
       kind: "code",
       language: "css",
       code: ".tooltip {\n  display: none;\n  opacity: 0;\n  transition: opacity 180ms ease-out, display 180ms allow-discrete;\n}\n@starting-style {\n  .wrap:hover .tooltip { opacity: 0; }\n}\n.wrap:hover .tooltip {\n  display: block;\n  opacity: 1;\n}",
+      tailwind: '<div class="hidden opacity-0 transition-[display,opacity] duration-180 ease-out transition-discrete starting:opacity-0 group-hover:block group-hover:opacity-100">',
+      caption: "transition-discrete maps to transition-behavior: allow-discrete; starting: maps to @starting-style. Both landed in Tailwind v4.1 — check the caniuse embed below before relying on the underlying CSS in production.",
     },
     {
       kind: "demo",
@@ -312,6 +320,7 @@ export const transitionsDoc: CssDoc = {
       panes: [
         {
           label: "The sitewide default (180ms, color properties only)",
+          tailwind: '<div class="transition-colors duration-180 ease-out hover:bg-neutral-900">',
           html: sitewideColorRuleHtml,
         },
       ],
@@ -350,6 +359,45 @@ export const transitionsDoc: CssDoc = {
         "You can't reliably transition to/from auto (e.g. height: auto) — the browser doesn't have a numeric start or end value to interpolate. Animate a fixed value, max-height with headroom, or use the Grid track trick (grid-template-rows: 0fr → 1fr) instead.",
         "transition and animation solve different problems: transition eases between two states triggered by something else (hover, class change); animation runs a self-contained, potentially looping sequence via @keyframes with no trigger needed.",
         "Respect prefers-reduced-motion — wrap non-essential transitions (or at least layout/transform ones) in @media (prefers-reduced-motion: no-preference) the way this site's global rule does.",
+      ],
+    },
+
+    { kind: "heading", text: "Using it with Tailwind" },
+    {
+      kind: "paragraph",
+      text: "Unlike contrast-color() or scroll-driven animations, transitions map onto real Tailwind utilities — transition-property, transition-duration, transition-timing-function, and transition-delay all have first-class classes, not just arbitrary-value escapes.",
+    },
+    {
+      kind: "table",
+      headers: ["CSS", "Tailwind"],
+      rows: [
+        ["transition-property: color, background-color, border-color, ...", "transition-colors"],
+        ["transition-property: transform", "transition-transform"],
+        ["transition-property: opacity", "transition-opacity"],
+        ["transition-property: box-shadow", "transition-shadow"],
+        ["transition-property: all", "transition (bare) or transition-all"],
+        ["transition-property: <custom list>", "transition-[color,transform] (arbitrary value)"],
+        ["transition-duration: <n>ms", "duration-<n> (e.g. duration-150), or duration-[<n>ms] for anything unusual"],
+        ["transition-timing-function: ease-out / linear / ...", "ease-out, ease-in, ease-in-out, ease-linear, or ease-[cubic-bezier(...)] for a custom curve"],
+        ["transition-delay: <n>ms", "delay-<n>, or delay-[<n>ms]"],
+      ],
+    },
+    {
+      kind: "code",
+      language: "html",
+      code: '<button class="transition-colors duration-200 ease-out hover:bg-blue-600">\n  Save\n</button>',
+      caption: "The everyday case: one property family (colors), a duration, an easing curve, all as named utilities — no arbitrary-value brackets needed.",
+    },
+    {
+      kind: "paragraph",
+      text: "Two newer pieces — transitioning discrete properties and @starting-style — also shipped as first-class Tailwind v4.1 features rather than staying arbitrary-value-only:",
+    },
+    {
+      kind: "list",
+      items: [
+        "transition-discrete sets transition-behavior: allow-discrete.",
+        "The starting: variant wraps a utility in @starting-style — e.g. starting:opacity-0 is the Tailwind equivalent of the @starting-style { opacity: 0; } block used in the demo above.",
+        "A property list that mixes a discrete property (display) with a continuous one (opacity) still needs the arbitrary-value form for transition-property, since there's no named utility that bundles an arbitrary property pair — transition-[display,opacity].",
       ],
     },
 

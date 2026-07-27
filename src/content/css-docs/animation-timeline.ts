@@ -149,6 +149,7 @@ export const animationTimelineDoc: CssDoc = {
       kind: "code",
       language: "css",
       code: "animation-timeline: none;                 /* default: time-driven, as normal */\nanimation-timeline: scroll(<scroller> <axis>);  /* progress = scroll position */\nanimation-timeline: view(<axis> <inset>);       /* progress = position in viewport */\nanimation-timeline: --custom-name;         /* a named timeline, see below */",
+      tailwind: '<div class="[animation-timeline:scroll(root_block)]">',
     },
     {
       kind: "callout",
@@ -167,6 +168,7 @@ export const animationTimelineDoc: CssDoc = {
         {
           label: "animation-timeline: scroll(root block)",
           code: ".progress {\n  transform: scaleX(0);\n  transform-origin: left;\n  animation: grow linear;\n  animation-timeline: scroll(root block);\n}\n@keyframes grow {\n  to { transform: scaleX(1); }\n}",
+          tailwind: '<div class="scale-x-0 origin-left animate-[grow_linear] [animation-timeline:scroll(root_block)]">',
           html: scrollProgressHtml,
         },
       ],
@@ -183,6 +185,7 @@ export const animationTimelineDoc: CssDoc = {
       kind: "code",
       language: "css",
       code: ".scroller {\n  scroll-timeline: --local block; /* name + axis, on the scroller */\n}\n.ball {\n  animation: slide linear;\n  animation-timeline: --local;    /* read it from anywhere */\n}",
+      tailwind: '<div class="[scroll-timeline:--local_block]">\n  <div class="animate-[slide_linear] [animation-timeline:--local]">',
     },
     {
       kind: "demo",
@@ -212,6 +215,7 @@ export const animationTimelineDoc: CssDoc = {
         {
           label: "animation-timeline: view(block 20%)",
           code: ".card {\n  animation: reveal linear;\n  animation-timeline: view(block 20%);\n  animation-range: entry;\n}\n@keyframes reveal {\n  from { opacity: 0; transform: translateY(28px) scale(.92); }\n  to   { opacity: 1; transform: none; }\n}",
+          tailwind: '<div class="animate-[reveal_linear] [animation-timeline:view(block_20%)] [animation-range:entry]">',
           html: viewTimelineHtml,
         },
       ],
@@ -240,6 +244,7 @@ export const animationTimelineDoc: CssDoc = {
       kind: "code",
       language: "css",
       code: "/* animate only while the card is entering, not for its whole time on screen */\nanimation-range: entry;\n\n/* or trim to an explicit slice of the cover range */\nanimation-range: cover 0% cover 40%;",
+      tailwind: '<div class="[animation-range:entry]">\n<div class="[animation-range:cover_0%_cover_40%]">',
     },
 
     { kind: "heading", text: "Fallback for unsupported browsers" },
@@ -266,6 +271,26 @@ export const animationTimelineDoc: CssDoc = {
         "A scroll(root block) timeline only ever reaches 100% if the document is actually taller than the viewport — test with real content length, not a half-empty page.",
         "Named timelines (scroll-timeline-name / view-timeline-name) must be unique per scroller; animation-timeline: --name just looks up that name in the current scope, it doesn't search the whole document.",
         "Because progress comes from layout/scroll position rather than a clock, DevTools' normal animation-duration inspection tools don't apply the same way — use the Chrome DevTools \"Animations\" or \"Scroll-driven animations\" panel instead.",
+      ],
+    },
+
+    { kind: "heading", text: "Using it with Tailwind" },
+    {
+      kind: "paragraph",
+      text: "Scroll-driven animations are recent enough that Tailwind has no dedicated utilities for animation-timeline, scroll-timeline, view-timeline, or animation-range — every one of them has to go through Tailwind's arbitrary-property syntax, [property:value], with spaces in the value replaced by underscores.",
+    },
+    {
+      kind: "code",
+      language: "html",
+      code: '<!-- a named local scroll timeline, then reading it from the animated element -->\n<div class="[scroll-timeline:--local_block]">\n  <div class="animate-[slide_linear] [animation-timeline:--local]"></div>\n</div>',
+      caption: "animate-[slide_linear] is Tailwind's arbitrary-value form of animation: slide linear — it still points at a @keyframes rule you define in real CSS, Tailwind utilities can't declare keyframes inline.",
+    },
+    {
+      kind: "list",
+      items: [
+        "The @keyframes block itself always stays plain CSS (in global.css or a <style> block) — there's no Tailwind utility that generates keyframe steps, only ones that reference a keyframe name you've already defined.",
+        "Chain multiple arbitrary properties by just adding another bracketed class: [animation-timeline:view(block_20%)] [animation-range:entry] is two separate utilities, not one.",
+        "animation-range's raw value has commas and percent signs in odd places (cover_0%_cover_40%) — double-check the underscore substitution renders the CSS you expect; when a value gets hard to read as a class name, it's often clearer to keep it in a plain CSS rule instead and reserve Tailwind for the surrounding layout.",
       ],
     },
 
