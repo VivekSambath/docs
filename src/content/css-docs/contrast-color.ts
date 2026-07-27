@@ -220,6 +220,67 @@ const invertedContrastHtml = (on: boolean) => {
 </html>`;
 };
 
+// --- Combined example: contrast-color() on box-shadow + light-dark() -------
+// A CMS-supplied accent color drives border-color and a contrast-color()
+// ring; the avatar's own background follows the reader's theme via
+// light-dark(), driven for real by :root's color-scheme rather than by
+// swapping hex values in JS.
+
+const AVATAR_USERS = [
+  { hex: TOGGLE_COLORS.on, name: "gold" },
+  { hex: TOGGLE_COLORS.off, name: "navy" },
+] as const;
+
+const avatarThemeHtml = (on: boolean) => {
+  const items = AVATAR_USERS.map(
+    ({ hex, name }) => `
+    <div class="cell">
+      <div class="avatar" style="--user-color:${hex}">AB</div>
+      <span>--user-color: ${hex} (${name})</span>
+    </div>`,
+  ).join("");
+  return `<!doctype html>
+<html>
+<head>
+<style>
+  :root { color-scheme: ${on ? "light" : "dark"}; }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; height: 100%; }
+  body {
+    font: 12px/1.4 system-ui, sans-serif;
+    background: light-dark(#e5e5e5, #050505);
+    color: light-dark(#111, #eee);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 28px;
+  }
+  .cell { text-align: center; }
+  .avatar {
+    width: 64px;
+    height: 64px;
+    margin: 0 auto 8px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 600;
+    background: light-dark(#fff, #111);
+    border: 3px solid var(--user-color);
+    box-shadow: 0 0 0 3px contrast-color(var(--user-color));
+  }
+  .cell span {
+    display: block;
+    font-family: ui-monospace, monospace;
+    font-size: 10px;
+    opacity: .8;
+  }
+</style>
+</head>
+<body>${items}</body>
+</html>`;
+};
+
 function invertedSwatchesHtml(mode: "fixed" | "auto") {
   const items = SWATCHES.map((hex) => {
     const bg = mode === "fixed" ? "#fff" : `#fff; background: contrast-color(${hex})`;
@@ -422,10 +483,18 @@ export const contrastColorDoc: CssDoc = {
         "The rare case: this blue is bright enough that white itself barely clears 4.5:1, leaving no headroom for any softer off-white — one that looks perfectly reasonable by eye fails AA outright here. On saturated mid-tone backgrounds like this, don't eyeball a substitute for contrast-color()'s pick; if you want one anyway, run it through a contrast checker first.",
     },
     {
-      kind: "code",
-      language: "css",
-      caption: "Points 2 and 3 together: contrast-color() on a non-color property, alongside light-dark() handling the site's own theme.",
-      code: ".avatar {\n  --user-color: var(--cms-accent); /* not under your control */\n  background: light-dark(#fff, #111); /* your own theme colors */\n  border-color: var(--user-color);\n  box-shadow: 0 0 0 2px contrast-color(var(--user-color));\n}",
+      kind: "demo",
+      toggle: { label: "Switch site theme (light ↔ dark)", defaultOn: true },
+      panes: [
+        {
+          label: "Points 2 and 3 together",
+          code: ".avatar {\n  --user-color: var(--cms-accent); /* not under your control */\n  background: light-dark(#fff, #111); /* your own theme colors */\n  border-color: var(--user-color);\n  box-shadow: 0 0 0 3px contrast-color(var(--user-color));\n}",
+          html: avatarThemeHtml,
+        },
+      ],
+      height: 170,
+      caption:
+        "The ring color tracks contrast-color(--user-color) and stays put as you toggle — it only depends on the CMS accent, not the site theme. The avatar's own background is the one thing that flips, via light-dark() reading a real color-scheme change, not a simulated one.",
     },
 
     { kind: "heading", text: "Can I use" },
