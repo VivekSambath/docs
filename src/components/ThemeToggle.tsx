@@ -11,7 +11,11 @@ export default function ThemeToggle() {
 
   useEffect(() => {
     document.documentElement.classList.toggle("dark", theme === "dark");
-    localStorage.setItem("theme", theme);
+    try {
+      localStorage.setItem("theme", theme);
+    } catch {
+      // storage may be unavailable (e.g. a sandboxed preview) — theme just won't persist
+    }
   }, [theme]);
 
   return (

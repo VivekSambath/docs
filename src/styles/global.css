@@ -3,11 +3,46 @@
 /* Class-based dark mode so it can be toggled manually, not just via OS preference. */
 @custom-variant dark (&:where(.dark, .dark *));
 
+@theme {
+  /* The site's single accent (design-principles rule 11) — MDN's signature
+     blue, reserved for links, the current-page nav indicator, and focus
+     rings. Overridden per-theme below so `text-accent`/`border-accent`/etc.
+     stay correct without a `dark:` variant at every call site. */
+  --color-accent: #0060df;
+  --color-accent-hover: #0345a5;
+
+  /* MDN's system font stack, without Roboto (skips straight to Segoe UI/Arial
+     on Android instead of falling back to Roboto). */
+  --font-sans:
+    -apple-system, BlinkMacSystemFont, "Segoe UI", "Helvetica Neue", Arial,
+    sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
+}
+
+.dark {
+  --color-accent: #75bfff;
+  --color-accent-hover: #a6d4ff;
+}
+
 @layer base {
+  /* Smooth, sitewide color transition (theme toggle, hover states, active
+     nav, etc.) instead of every color snapping instantly. Scoped to color
+     properties only — layout/transform stay instant — and any element with
+     its own `transition-*` utility (e.g. `transition-colors duration-150`)
+     overrides this since Tailwind's utilities layer comes after `base`. */
+  @media (prefers-reduced-motion: no-preference) {
+    *,
+    *::before,
+    *::after {
+      transition-property: background-color, border-color, color, fill, stroke, box-shadow;
+      transition-duration: 180ms;
+      transition-timing-function: ease-out;
+    }
+  }
+
   body {
-    @apply bg-neutral-50 text-neutral-950 antialiased dark:bg-neutral-950 dark:text-neutral-50;
-    font-size: 17px;
-    line-height: 1.55;
+    @apply bg-neutral-50 text-neutral-950 antialiased dark:bg-neutral-900 dark:text-neutral-50;
+    font-size: 20px;
+    line-height: 1.6;
     letter-spacing: -0.01em;
   }
 
@@ -27,6 +62,13 @@
     color: inherit;
   }
 
+  a:focus-visible,
+  button:focus-visible,
+  summary:focus-visible {
+    outline: 2px solid var(--color-accent);
+    outline-offset: 2px;
+  }
+
   ul,
   ol {
     margin: 0;
@@ -40,5 +82,68 @@
 
   #root {
     @apply flex min-h-svh flex-col;
+  }
+}
+
+@layer components {
+  /* Route-change fade+slide (Layout.tsx keys a wrapper around <Outlet> by
+     pathname) and a one-shot scroll-reveal for content blocks (DocContent's
+     Reveal.tsx). Both skip entirely under prefers-reduced-motion — no
+     alternate "instant" rule is needed since the *un*-animated state (full
+     opacity, no transform) is simply what elements have by default. */
+  @media (prefers-reduced-motion: no-preference) {
+    .page-transition {
+      animation: page-in 220ms ease-out both;
+    }
+
+    .reveal {
+      opacity: 0;
+      transform: translateY(14px);
+      transition:
+        opacity 420ms ease-out,
+        transform 420ms ease-out;
+    }
+
+    .reveal-visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  @keyframes page-in {
+    from {
+      opacity: 0;
+      transform: translateY(8px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  /* MDN-style native <details>/<summary> accordion: hide the default marker,
+     rotate a custom chevron instead. Chevron sits outside any nested <a> so
+     clicking it toggles without triggering navigation. */
+  .sidebar-details > summary {
+    list-style: none;
+    cursor: pointer;
+  }
+
+  .sidebar-details > summary::-webkit-details-marker {
+    display: none;
+  }
+
+  .sidebar-details > summary::marker {
+    content: "";
+  }
+
+  .sidebar-chevron {
+    display: inline-block;
+    flex: none;
+    transition: transform 120ms ease;
+  }
+
+  .sidebar-details[open] > summary > .sidebar-chevron {
+    transform: rotate(90deg);
   }
 }
