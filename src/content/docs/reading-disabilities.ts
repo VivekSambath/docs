@@ -1,5 +1,86 @@
 import type { DocArticle } from "../articles";
 
+// --- Live demo HTML generators ----------------------------------------------
+// Sandboxed iframes (sandbox="", no scripts) — real <label>/<input> and <a>
+// elements are still natively interactive, so these need no JavaScript.
+
+function fieldPage(inner: string) {
+  return `<!doctype html>
+<html>
+<head>
+<style>
+  * { box-sizing: border-box; }
+  html, body { margin: 0; height: 100%; }
+  body {
+    font: 13px/1.4 system-ui, sans-serif;
+    color: #171717;
+    background: #fff;
+    padding: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  label { display: block; margin-bottom: 6px; font-weight: 600; font-size: 12px; }
+  input {
+    width: 100%;
+    max-width: 220px;
+    padding: 10px 12px;
+    border: 1px solid #a3a3a3;
+    border-radius: 6px;
+    font: inherit;
+  }
+  input:focus { outline: 2px solid #0060df; outline-offset: 1px; }
+</style>
+</head>
+<body>${inner}</body>
+</html>`;
+}
+
+const placeholderOnlyHtml = () =>
+  fieldPage(`<input type="text" placeholder="Full name" />`);
+
+const visibleLabelHtml = () =>
+  fieldPage(
+    `<div style="width:100%;max-width:220px;"><label for="name">Full name</label><input id="name" type="text" /></div>`,
+  );
+
+function linkListHtml(kind: "vague" | "descriptive") {
+  const links =
+    kind === "vague"
+      ? ["Click here", "Read more", "Learn more"]
+      : [
+          "Read our full shipping policy",
+          "Compare pricing plans",
+          "Download the 2026 tax guide (PDF)",
+        ];
+  const items = links
+    .map((text) => `<li><a href="#">${text}</a></li>`)
+    .join("");
+  return `<!doctype html>
+<html>
+<head>
+<style>
+  * { box-sizing: border-box; }
+  html, body { margin: 0; height: 100%; }
+  body {
+    font: 13px/1.6 system-ui, sans-serif;
+    color: #171717;
+    background: #fff;
+    padding: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  ul { margin: 0; padding: 0; list-style: none; width: 100%; max-width: 240px; }
+  li { border-bottom: 1px solid #e5e5e5; }
+  li:last-child { border-bottom: none; }
+  a { display: block; padding: 8px 4px; color: #0060df; }
+</style>
+</head>
+<body><ul>${items}</ul></body>
+</html>`;
+}
+
 export const readingDisabilities: DocArticle = {
   kind: "doc",
   slug: "reading-disabilities",
@@ -157,11 +238,49 @@ export const readingDisabilities: DocArticle = {
       variant: "note",
       text: "Screen readers can generate a list of all links on a page for quick navigation, stripped of surrounding sentence context. Link text needs to make sense completely on its own, not just inside the paragraph it happens to sit in.",
     },
+    {
+      kind: "demo",
+      panes: [
+        {
+          label: "Vague, out of context",
+          status: "bad",
+          html: () => linkListHtml("vague"),
+        },
+        {
+          label: "Descriptive, out of context",
+          status: "good",
+          html: () => linkListHtml("descriptive"),
+        },
+      ],
+      height: 170,
+      caption:
+        "This is effectively a screen reader's link-list view — every surrounding sentence stripped away, only the link text left. One column is a guessing game; the other tells you exactly where each link goes.",
+    },
 
     { kind: "heading", text: "Better Forms" },
     {
       kind: "paragraph",
       text: "A placeholder is not a label. It disappears the moment someone starts typing, so by the time they pause to double-check what field they're in, the hint that told them is already gone. Keep labels visible above or beside the field at all times, put one field per row so nothing has to be scanned side to side, and group related fields under a shared heading.",
+    },
+    {
+      kind: "demo",
+      panes: [
+        {
+          label: "placeholder only",
+          status: "bad",
+          code: '<input placeholder="Full name" />',
+          html: placeholderOnlyHtml,
+        },
+        {
+          label: "visible label",
+          status: "good",
+          code: '<label for="name">Full name</label>\n<input id="name" />',
+          html: visibleLabelHtml,
+        },
+      ],
+      height: 130,
+      caption:
+        "Click into each field and type. The placeholder-only version loses its only hint the moment you start typing; the labeled version keeps it visible the whole time.",
     },
     {
       kind: "code",

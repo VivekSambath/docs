@@ -1,5 +1,116 @@
 import type { DocArticle } from "../articles";
 
+// --- Live demo HTML generators ----------------------------------------------
+// Sandboxed iframes (sandbox="", no scripts) — hover/active/focus states and
+// real inputs still work natively, so these stay genuinely interactive.
+
+function phoneMockup(inner: string) {
+  return `<!doctype html>
+<html>
+<head>
+<style>
+  * { box-sizing: border-box; }
+  html, body { margin: 0; height: 100%; }
+  body {
+    font: 12px/1.4 system-ui, sans-serif;
+    background: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .phone {
+    position: relative;
+    width: 140px;
+    height: 260px;
+    border-radius: 22px;
+    border: 2px solid #171717;
+    overflow: hidden;
+    background: #fafafa;
+  }
+  .label {
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    right: 10px;
+    font-size: 10px;
+    font-weight: 600;
+    color: #737373;
+    text-align: center;
+  }
+  .corner {
+    position: absolute;
+    top: 26px;
+    font-size: 9px;
+    color: #a3a3a3;
+  }
+  .dot {
+    position: absolute;
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    background: #171717;
+    transform: translate(-50%, 50%);
+  }
+</style>
+</head>
+<body>
+  <div class="phone">${inner}</div>
+</body>
+</html>`;
+}
+
+const thumbZoneHtml = (on: boolean) => {
+  const side = on ? "right" : "left";
+  const cornerSide = on ? "left" : "right";
+  const glow = `radial-gradient(circle at bottom ${side}, rgba(23,23,23,0.35), rgba(23,23,23,0.08) 60%, transparent 75%)`;
+  return phoneMockup(`
+    <div class="label">${on ? "Right-handed grip" : "Left-handed grip"}</div>
+    <div class="corner" style="${cornerSide}: 10px;">hard to reach</div>
+    <div style="position:absolute;inset:0;background:${glow};"></div>
+    <div class="dot" style="${side}: 16px; bottom: 8px;"></div>
+  `);
+};
+
+function touchTargetHtml(size: "small" | "large") {
+  const px = size === "small" ? 26 : 44;
+  return `<!doctype html>
+<html>
+<head>
+<style>
+  * { box-sizing: border-box; }
+  html, body { margin: 0; height: 100%; }
+  body {
+    font: 11px/1.3 system-ui, sans-serif;
+    background: #fff;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+  }
+  button {
+    width: ${px}px;
+    height: ${px}px;
+    border-radius: 8px;
+    border: 1px solid #171717;
+    background: #fff;
+    color: #171717;
+    font-size: 16px;
+    cursor: pointer;
+    transition: background-color 120ms ease-out, transform 120ms ease-out;
+  }
+  button:hover { background: #f5f5f5; }
+  button:active { background: #171717; color: #fff; transform: scale(0.94); }
+  span { color: #737373; }
+</style>
+</head>
+<body>
+  <button aria-label="Delete">×</button>
+  <span>${px}×${px}px — try tapping it</span>
+</body>
+</html>`;
+}
+
 export const touchEvents: DocArticle = {
   kind: "doc",
   slug: "touch-events",
@@ -61,6 +172,19 @@ export const touchEvents: DocArticle = {
         "Left-handed grip (phone held in left hand)\n\n  +----------------------------+\n  |              hard to reach  |\n  |                             |\n  |         . . .               |\n  |       .       .             |\n  |    .           . .          |\n  |      .   natural   .        |\n  |       .    zone      .      |\n  |      .                 .    |\n  |      .                  .   |\n  |      *                  .   |\n  +----------------------------+",
       caption:
         "The zone mirrors left-to-right for a left-handed grip. An element placed in the right-handed \"natural zone\" sits in the left-handed user's stretch or hard-to-reach zone instead — exactly where a misfiring touchstart bug is most likely to hide from a right-handed tester.",
+    },
+    {
+      kind: "demo",
+      toggle: { label: "Switch grip", defaultOn: true },
+      panes: [
+        {
+          label: "Thumb-zone heat map",
+          html: thumbZoneHtml,
+        },
+      ],
+      height: 300,
+      caption:
+        "Same phone, same UI — only the grip changes. Anything placed in the glowing corner sits in the natural zone for one grip and the hard-to-reach zone for the other.",
     },
 
     { kind: "heading", text: "touchstart vs click — the old 300ms delay" },
@@ -169,6 +293,24 @@ export const touchEvents: DocArticle = {
       kind: "callout",
       variant: "note",
       text: "The ~44x44px touch-target guidance isn't an arbitrary number — it approximates the average size of a fingertip's contact area, and it shows up (with minor variations) across WCAG, Apple's Human Interface Guidelines, and Google's Material Design guidance alike.",
+    },
+    {
+      kind: "demo",
+      panes: [
+        {
+          label: "26×26px",
+          status: "bad",
+          html: () => touchTargetHtml("small"),
+        },
+        {
+          label: "44×44px",
+          status: "good",
+          html: () => touchTargetHtml("large"),
+        },
+      ],
+      height: 160,
+      caption:
+        "Click or tap either button — the hit area is the whole square, not just the × glyph. The smaller target is noticeably harder to land on with a thumb than a mouse cursor.",
     },
 
     { kind: "heading", text: "Thumb Zones" },

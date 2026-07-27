@@ -42,9 +42,13 @@ export default function Home() {
             deliberate accent reserved for anything you can click — every
             spacing, weight, and border here is a choice, not a default.
           </p>
-          <div className="mt-8">
+          <div className="mt-8 flex flex-wrap gap-4">
             <LinkButton to="/articles" variant="solid" className="group">
               Read the articles
+              <ArrowRightIcon className="h-4 w-4 transition-transform duration-150 ease-out group-hover:translate-x-1" />
+            </LinkButton>
+            <LinkButton to="/css-docs" variant="outline" className="group">
+              Browse CSS Docs
               <ArrowRightIcon className="h-4 w-4 transition-transform duration-150 ease-out group-hover:translate-x-1" />
             </LinkButton>
           </div>
