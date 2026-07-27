@@ -521,14 +521,31 @@ export const contrastColorDoc: CssDoc = {
 
     { kind: "heading", text: "Using it with Tailwind" },
     {
+      kind: "callout",
+      variant: "note",
+      text: "Does Tailwind support contrast-color()? No — Tailwind CSS itself doesn't implement it as a utility. If your target browsers support the underlying CSS function (see the Can I use table below), you can still reach it from Tailwind two ways: arbitrary values, or a small custom utility.",
+    },
+    { kind: "heading", text: "Method 1: arbitrary values", level: 3 },
+    {
       kind: "paragraph",
-      text: "Tailwind v4 has no dedicated utility for contrast-color() — it's too new and too dynamic (the output depends on a runtime value, not a fixed design-token). Reach for arbitrary values instead: bracket syntax accepts any raw CSS value, function calls included, as long as spaces become underscores.",
+      text: "Bracket syntax accepts any raw CSS value, function calls included, as long as spaces become underscores. This is the fastest option and needs no config changes.",
     },
     {
       kind: "code",
       language: "html",
       code: '<!-- background from a CSS custom property, text derived from it -->\n<div class="bg-(--tag-color) text-[contrast-color(var(--tag-color))]">\n  Tag label\n</div>',
       caption: "bg-(--tag-color) is Tailwind v4's shorthand for bg-[var(--tag-color)]; text-[contrast-color(...)] is a plain arbitrary value, since Tailwind has no contrast-color-aware utility to shorten it further.",
+    },
+    { kind: "heading", text: "Method 2: a custom utility", level: 3 },
+    {
+      kind: "paragraph",
+      text: "If the same pattern shows up in several places, wrap it in a named utility once instead of repeating the arbitrary value everywhere it's used.",
+    },
+    {
+      kind: "code",
+      language: "css",
+      code: "@layer utilities {\n  .text-auto-contrast {\n    color: contrast-color(var(--bg));\n  }\n}",
+      caption: "Then use it like any other utility: <div class=\"bg-(--bg) text-auto-contrast\">.",
     },
     {
       kind: "list",
@@ -537,6 +554,11 @@ export const contrastColorDoc: CssDoc = {
         "Multi-word arbitrary values need underscores where you'd normally write a space or comma-separated function argument list stays as-is: shadow-[0_0_0_3px_contrast-color(var(--user-color))] renders as box-shadow: 0 0 0 3px contrast-color(var(--user-color)).",
         "The two-declaration fallback trick (plain color, then contrast-color() overriding it) needs actual CSS source order to work — see the callout above. Two Tailwind utility classes for the same property don't reliably preserve that order, so keep that specific pattern in a CSS rule rather than the class list.",
       ],
+    },
+    {
+      kind: "callout",
+      variant: "warning",
+      text: "The limiting factor here is browser support, not Tailwind — contrast-color() is new enough that shipping it without the fallback pattern above is risky. Check the Can I use embed below before relying on it in production.",
     },
 
     { kind: "heading", text: "Can I use" },

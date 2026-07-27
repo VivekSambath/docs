@@ -364,8 +364,9 @@ export const transitionsDoc: CssDoc = {
 
     { kind: "heading", text: "Using it with Tailwind" },
     {
-      kind: "paragraph",
-      text: "Unlike contrast-color() or scroll-driven animations, transitions map onto real Tailwind utilities — transition-property, transition-duration, transition-timing-function, and transition-delay all have first-class classes, not just arbitrary-value escapes.",
+      kind: "callout",
+      variant: "tip",
+      text: "Does Tailwind support transitions? Yes, natively — unlike contrast-color() or scroll-driven animations, transition-property, transition-duration, transition-timing-function, and transition-delay all have first-class Tailwind utilities. No arbitrary-value escape hatch needed for the everyday cases.",
     },
     {
       kind: "table",
@@ -390,7 +391,7 @@ export const transitionsDoc: CssDoc = {
     },
     {
       kind: "paragraph",
-      text: "Two newer pieces — transitioning discrete properties and @starting-style — also shipped as first-class Tailwind v4.1 features rather than staying arbitrary-value-only:",
+      text: "Two newer pieces — transitioning discrete properties and @starting-style — are also yes, natively supported: both shipped as first-class Tailwind v4.1 features rather than staying arbitrary-value-only.",
     },
     {
       kind: "list",
@@ -399,6 +400,11 @@ export const transitionsDoc: CssDoc = {
         "The starting: variant wraps a utility in @starting-style — e.g. starting:opacity-0 is the Tailwind equivalent of the @starting-style { opacity: 0; } block used in the demo above.",
         "A property list that mixes a discrete property (display) with a continuous one (opacity) still needs the arbitrary-value form for transition-property, since there's no named utility that bundles an arbitrary property pair — transition-[display,opacity].",
       ],
+    },
+    {
+      kind: "callout",
+      variant: "note",
+      text: "Tailwind support isn't the constraint for any of this — the underlying CSS is. transition-property/duration/timing-function/delay are supported everywhere that matters; transition-behavior: allow-discrete and @starting-style are newer, so check the last two Can I use tables below before relying on the fade-in-from-display-none pattern in production.",
     },
 
     { kind: "heading", text: "Can I use" },

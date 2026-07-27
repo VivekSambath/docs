@@ -276,8 +276,14 @@ export const animationTimelineDoc: CssDoc = {
 
     { kind: "heading", text: "Using it with Tailwind" },
     {
+      kind: "callout",
+      variant: "note",
+      text: "Does Tailwind support animation-timeline? No — scroll-driven animations are recent enough that Tailwind has no dedicated utilities for animation-timeline, scroll-timeline, view-timeline, or animation-range. Every one of them has to go through Tailwind's arbitrary-property syntax, or a small custom utility, the same two options as contrast-color() above.",
+    },
+    { kind: "heading", text: "Method 1: arbitrary properties", level: 3 },
+    {
       kind: "paragraph",
-      text: "Scroll-driven animations are recent enough that Tailwind has no dedicated utilities for animation-timeline, scroll-timeline, view-timeline, or animation-range — every one of them has to go through Tailwind's arbitrary-property syntax, [property:value], with spaces in the value replaced by underscores.",
+      text: "[property:value], with spaces in the value replaced by underscores.",
     },
     {
       kind: "code",
@@ -285,13 +291,28 @@ export const animationTimelineDoc: CssDoc = {
       code: '<!-- a named local scroll timeline, then reading it from the animated element -->\n<div class="[scroll-timeline:--local_block]">\n  <div class="animate-[slide_linear] [animation-timeline:--local]"></div>\n</div>',
       caption: "animate-[slide_linear] is Tailwind's arbitrary-value form of animation: slide linear — it still points at a @keyframes rule you define in real CSS, Tailwind utilities can't declare keyframes inline.",
     },
+    { kind: "heading", text: "Method 2: a custom utility", level: 3 },
+    {
+      kind: "paragraph",
+      text: "For a pattern reused across components, name it once instead of repeating the arbitrary property everywhere.",
+    },
+    {
+      kind: "code",
+      language: "css",
+      code: "@layer utilities {\n  .scroll-progress {\n    animation: grow-progress linear;\n    animation-timeline: scroll(root block);\n  }\n}",
+      caption: "@keyframes grow-progress still has to be declared as plain CSS somewhere — Tailwind utilities reference keyframes, they can't generate the keyframe steps themselves.",
+    },
     {
       kind: "list",
       items: [
-        "The @keyframes block itself always stays plain CSS (in global.css or a <style> block) — there's no Tailwind utility that generates keyframe steps, only ones that reference a keyframe name you've already defined.",
         "Chain multiple arbitrary properties by just adding another bracketed class: [animation-timeline:view(block_20%)] [animation-range:entry] is two separate utilities, not one.",
         "animation-range's raw value has commas and percent signs in odd places (cover_0%_cover_40%) — double-check the underscore substitution renders the CSS you expect; when a value gets hard to read as a class name, it's often clearer to keep it in a plain CSS rule instead and reserve Tailwind for the surrounding layout.",
       ],
+    },
+    {
+      kind: "callout",
+      variant: "warning",
+      text: "Even once you've picked a Tailwind method, browser support is still the real gate here — animation-timeline, view-timeline, and timeline-scope are all newer than the CSS in the transitions or contrast-color() docs. Check the three Can I use tables below before shipping a scroll-driven effect as the only way content becomes visible.",
     },
 
     { kind: "heading", text: "Can I use" },
