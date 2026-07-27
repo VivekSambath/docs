@@ -207,6 +207,16 @@ export function MoonIcon({ className }: { className?: string }) {
   );
 }
 
+/** A panel with a divided left rail — toggles the sidebar's collapsed state. */
+export function SidebarIcon({ className }: { className?: string }) {
+  return (
+    <Svg viewBox="0 0 20 20" strokeWidth={1.6} className={className}>
+      <rect x="2.5" y="3.5" width="15" height="13" rx="2" />
+      <line x1="8" y1="3.5" x2="8" y2="16.5" />
+    </Svg>
+  );
+}
+
 /** A filled swatch beside an outlined one — used for the contrast-color CSS doc. */
 export function SwatchIcon({ className }: { className?: string }) {
   return (

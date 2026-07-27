@@ -1,9 +1,20 @@
+import { useEffect, useState } from "react";
 import type { ReactNode, ComponentType } from "react";
 import { NavLink, useLocation } from "react-router-dom";
 import { articles, type Article } from "../content/articles";
 import { cssDocs } from "../content/cssDocs";
 import { getHeadings, scrollToId } from "./docToc";
-import { HomeIcon, ArticlesIcon, CodeIcon } from "./illustrations";
+import { HomeIcon, ArticlesIcon, CodeIcon, SidebarIcon } from "./illustrations";
+
+const COLLAPSE_STORAGE_KEY = "sidebar-collapsed";
+
+function getInitialCollapsed(): boolean {
+  try {
+    return localStorage.getItem(COLLAPSE_STORAGE_KEY) === "1";
+  } catch {
+    return false;
+  }
+}
 
 function navLinkClass({ isActive }: { isActive: boolean }, bordered = true) {
   return `flex items-center gap-2.5 py-2 pr-2 pl-3 text-[16px] leading-6 font-medium no-underline transition-colors duration-150 ${
@@ -42,13 +53,36 @@ function NavItem({
   to,
   end,
   icon: Icon,
+  collapsed = false,
   children,
 }: {
   to: string;
   end?: boolean;
   icon?: ComponentType<{ className?: string }>;
+  collapsed?: boolean;
   children: ReactNode;
 }) {
+  if (collapsed) {
+    const label = typeof children === "string" ? children : undefined;
+    return (
+      <li>
+        <NavLink
+          to={to}
+          end={end}
+          title={label}
+          aria-label={label}
+          className={({ isActive }) =>
+            `mx-auto flex h-9 w-9 items-center justify-center rounded-md transition-colors duration-150 ${
+              isActive ? "text-accent" : "text-muted hover:bg-fg hover:text-fg-invert"
+            }`
+          }
+        >
+          {Icon && <Icon className="h-4 w-4 shrink-0" />}
+        </NavLink>
+      </li>
+    );
+  }
+
   return (
     <li>
       <NavLink to={to} end={end} className={(state) => `group ${navLinkClass(state)}`}>
@@ -62,6 +96,16 @@ function NavItem({
 }
 
 export default function Sidebar() {
+  const [collapsed, setCollapsed] = useState<boolean>(getInitialCollapsed);
+
+  useEffect(() => {
+    try {
+      localStorage.setItem(COLLAPSE_STORAGE_KEY, collapsed ? "1" : "0");
+    } catch {
+      // storage may be unavailable (e.g. a sandboxed preview) — state just won't persist
+    }
+  }, [collapsed]);
+
   const location = useLocation();
   const activeSlug = location.pathname.startsWith("/articles/")
     ? location.pathname.slice("/articles/".length)
@@ -81,21 +125,41 @@ export default function Sidebar() {
   const rest = articles.filter((article) => article.kind !== "doc");
 
   return (
-    <aside className="hidden shrink-0 border-r border-border lg:block lg:w-72">
-      <nav aria-label="Site" className="sticky top-0 max-h-svh overflow-y-auto px-5 py-8">
+    <aside
+      className={`hidden shrink-0 border-r border-border motion-safe:transition-[width] duration-200 ease-out lg:block ${
+        collapsed ? "lg:w-16" : "lg:w-72"
+      }`}
+    >
+      <nav
+        aria-label="Site"
+        className={`sticky top-0 max-h-svh overflow-y-auto py-8 ${collapsed ? "px-3" : "px-5"}`}
+      >
+        <button
+          type="button"
+          onClick={() => setCollapsed((current) => !current)}
+          aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}
+          aria-pressed={collapsed}
+          title={collapsed ? "Expand sidebar" : "Collapse sidebar"}
+          className={`mb-4 flex h-9 w-9 items-center justify-center rounded-md text-muted transition-colors duration-150 hover:bg-fg hover:text-fg-invert ${
+            collapsed ? "mx-auto" : "ml-auto"
+          }`}
+        >
+          <SidebarIcon className="h-4 w-4" />
+        </button>
+
         <ul className="flex flex-col gap-1">
-          <NavItem to="/" end icon={HomeIcon}>
+          <NavItem to="/" end icon={HomeIcon} collapsed={collapsed}>
             Home
           </NavItem>
-          <NavItem to="/articles" end icon={ArticlesIcon}>
+          <NavItem to="/articles" end icon={ArticlesIcon} collapsed={collapsed}>
             Articles
           </NavItem>
-          <NavItem to="/css-docs" end icon={CodeIcon}>
+          <NavItem to="/css-docs" end icon={CodeIcon} collapsed={collapsed}>
             CSS Docs
           </NavItem>
         </ul>
 
-        {docs.length > 0 && (
+        {!collapsed && docs.length > 0 && (
           <details open className="sidebar-details mt-8">
             <SectionLabel>Frontend Best Practices</SectionLabel>
             <ul className="flex flex-col gap-1 pl-3">
@@ -141,7 +205,7 @@ export default function Sidebar() {
           </details>
         )}
 
-        {cssDocs.length > 0 && (
+        {!collapsed && cssDocs.length > 0 && (
           <details open className="sidebar-details mt-8">
             <SectionLabel>CSS Docs</SectionLabel>
             <ul className="flex flex-col gap-1 pl-3">
@@ -189,7 +253,7 @@ export default function Sidebar() {
           </details>
         )}
 
-        {rest.length > 0 && (
+        {!collapsed && rest.length > 0 && (
           <details open className="sidebar-details mt-8">
             <SectionLabel>More</SectionLabel>
             <ul className="flex flex-col gap-1 pl-3">
