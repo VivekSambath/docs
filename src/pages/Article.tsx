@@ -1,21 +1,36 @@
-import { Link, Navigate, useParams } from "react-router-dom";
+import { useEffect } from "react";
+import { Link, Navigate, useLocation, useParams } from "react-router-dom";
 import { getArticle } from "../content/articles";
 import DocContent from "../components/DocContent";
+import { renderInline } from "../components/inline";
+import ReadingProgress from "../components/ReadingProgress";
 import { docIllustrations } from "../components/docIllustrations";
+import { readingTimeForArticle } from "../components/readingTime";
 import { ArrowRightIcon } from "../components/illustrations";
 
 export default function Article() {
   const { slug } = useParams<{ slug: string }>();
+  const { hash } = useLocation();
   const article = slug ? getArticle(slug) : undefined;
+
+  // Deep links (e.g. from TipWidget) arrive as /articles/:slug#heading-id —
+  // the hash router can't rely on native anchor scrolling, so scroll manually
+  // once the article (and its headings) have rendered.
+  useEffect(() => {
+    if (!hash) return;
+    document.getElementById(hash.slice(1))?.scrollIntoView({ behavior: "smooth", block: "start" });
+  }, [hash, article]);
 
   if (!article) {
     return <Navigate to="/articles" replace />;
   }
 
   const Illustration = docIllustrations[article.slug];
+  const minutes = readingTimeForArticle(article);
 
   return (
     <article>
+      <ReadingProgress />
       <Link
         to="/articles"
         className="group mb-8 inline-flex items-center gap-1.5 text-sm text-accent no-underline hover:text-accent-hover"
@@ -25,11 +40,11 @@ export default function Article() {
       </Link>
       <div className="flex items-start gap-6">
         <div className="min-w-0">
-          {article.kind === "doc" && (
-            <p className="mb-2 text-sm font-medium uppercase tracking-wide text-muted">
-              {article.category}
-            </p>
-          )}
+          <p className="mb-2 flex items-center gap-2 text-sm font-medium uppercase tracking-wide text-muted">
+            {article.kind === "doc" && <span>{article.category}</span>}
+            {article.kind === "doc" && <span aria-hidden="true">·</span>}
+            <span>{minutes} min read</span>
+          </p>
           <h1 className="mb-3 text-4xl md:text-5xl">{article.title}</h1>
           <p className="max-w-prose text-lg text-muted">
             {article.excerpt}
@@ -73,7 +88,7 @@ export default function Article() {
                 <div>
                   <h3 className="mb-2 text-lg">{rule.title}</h3>
                   <p className="text-muted">
-                    {rule.body}
+                    {renderInline(rule.body)}
                   </p>
                 </div>
               </li>

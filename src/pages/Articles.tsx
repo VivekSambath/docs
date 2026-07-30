@@ -1,6 +1,7 @@
 import { Link } from "react-router-dom";
 import { articles, type Article } from "../content/articles";
 import { docIllustrations } from "../components/docIllustrations";
+import { readingTimeForArticle } from "../components/readingTime";
 import { ArrowRightIcon } from "../components/illustrations";
 
 function ArticleList({ items }: { items: Article[] }) {
@@ -25,6 +26,7 @@ function ArticleList({ items }: { items: Article[] }) {
                 <p className="mb-3 text-muted">
                   {article.excerpt}
                 </p>
+                <p className="text-sm text-muted">{readingTimeForArticle(article)} min read</p>
               </div>
               <ArrowRightIcon className="h-5 w-5 shrink-0 text-muted transition-transform duration-150 ease-out group-hover:translate-x-1" />
             </Link>

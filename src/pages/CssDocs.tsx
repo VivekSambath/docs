@@ -1,6 +1,7 @@
 import { Link } from "react-router-dom";
 import { cssDocs } from "../content/cssDocs";
 import { cssDocIllustrations } from "../components/cssDocIllustrations";
+import { readingTimeForCssDoc } from "../components/readingTime";
 import { ArrowRightIcon } from "../components/illustrations";
 
 export default function CssDocs() {
@@ -32,7 +33,8 @@ export default function CssDocs() {
                     {doc.category}
                   </p>
                   <h2 className="mb-2 font-mono text-xl">{doc.title}</h2>
-                  <p className="text-muted">{doc.excerpt}</p>
+                  <p className="mb-3 text-muted">{doc.excerpt}</p>
+                  <p className="text-sm text-muted">{readingTimeForCssDoc(doc)} min read</p>
                 </div>
                 <ArrowRightIcon className="h-5 w-5 shrink-0 text-muted transition-transform duration-150 ease-out group-hover:translate-x-1" />
               </Link>

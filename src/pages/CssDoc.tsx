@@ -1,7 +1,9 @@
 import { Link, Navigate, useParams } from "react-router-dom";
 import { getCssDoc } from "../content/cssDocs";
 import DocContent from "../components/DocContent";
+import ReadingProgress from "../components/ReadingProgress";
 import { cssDocIllustrations } from "../components/cssDocIllustrations";
+import { readingTimeForCssDoc } from "../components/readingTime";
 import { ArrowRightIcon } from "../components/illustrations";
 
 export default function CssDoc() {
@@ -13,9 +15,11 @@ export default function CssDoc() {
   }
 
   const Illustration = doc ? cssDocIllustrations[doc.slug] : undefined;
+  const minutes = readingTimeForCssDoc(doc);
 
   return (
     <article>
+      <ReadingProgress />
       <Link
         to="/css-docs"
         className="group mb-8 inline-flex items-center gap-1.5 text-sm text-accent no-underline hover:text-accent-hover"
@@ -25,8 +29,10 @@ export default function CssDoc() {
       </Link>
       <div className="flex items-start gap-6">
         <div className="min-w-0">
-          <p className="mb-2 text-sm font-medium uppercase tracking-wide text-muted">
-            {doc.category}
+          <p className="mb-2 flex items-center gap-2 text-sm font-medium uppercase tracking-wide text-muted">
+            <span>{doc.category}</span>
+            <span aria-hidden="true">·</span>
+            <span>{minutes} min read</span>
           </p>
           <h1 className="mb-3 font-mono text-4xl md:text-5xl">{doc.title}</h1>
           <p className="max-w-prose text-lg text-muted">
