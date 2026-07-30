@@ -1,5 +1,6 @@
 import { NavLink } from "react-router-dom";
 import ThemeToggle from "./ThemeToggle";
+import SearchPalette from "./SearchPalette";
 import { HomeIcon, ArticlesIcon, CodeIcon } from "./illustrations";
 
 const links = [
@@ -34,6 +35,7 @@ export default function Header() {
             </NavLink>
           ))}
         </nav>
+        <SearchPalette />
         <ThemeToggle />
       </div>
     </header>

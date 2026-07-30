@@ -207,6 +207,48 @@ export function MoonIcon({ className }: { className?: string }) {
   );
 }
 
+/** A signpost pointing two directions, one snapped off — the 404 page illustration. */
+export function LostIllustration({ className }: { className?: string }) {
+  return (
+    <Svg viewBox="0 0 160 160" className={className}>
+      <line x1="80" y1="20" x2="80" y2="140" />
+      <path d="M80 46h48l-10 14 10 14H80Z" strokeLinejoin="round" />
+      <path d="M80 74H36l8-10" strokeLinejoin="round" opacity="0.5" />
+      <line x1="56" y1="140" x2="104" y2="140" />
+    </Svg>
+  );
+}
+
+/** A magnifying glass — search trigger and empty-state icon. */
+export function SearchIcon({ className }: { className?: string }) {
+  return (
+    <Svg viewBox="0 0 20 20" strokeWidth={1.6} className={className}>
+      <circle cx="9" cy="9" r="6" />
+      <path d="M13.5 13.5 18 18" strokeLinecap="round" />
+    </Svg>
+  );
+}
+
+/** A lightbulb — same mark as the "tip" callout variant, reused for the homepage tip widget. */
+export function BulbIcon({ className }: { className?: string }) {
+  return (
+    <Svg viewBox="0 0 16 16" strokeWidth={1.4} className={className}>
+      <path d="M6 14.5h4" strokeLinecap="round" />
+      <path d="M6.5 12.5h3" strokeLinecap="round" />
+      <path d="M8 1.5a4.5 4.5 0 0 0-2.5 8.25c.5.35.75.9.75 1.4v.35h3.5v-.35c0-.5.25-1.05.75-1.4A4.5 4.5 0 0 0 8 1.5Z" strokeLinejoin="round" />
+    </Svg>
+  );
+}
+
+/** An X — small dismiss affordance. */
+export function CloseIcon({ className }: { className?: string }) {
+  return (
+    <Svg viewBox="0 0 16 16" strokeWidth={1.5} className={className}>
+      <path d="M4 4l8 8M12 4l-8 8" strokeLinecap="round" />
+    </Svg>
+  );
+}
+
 /** A panel with a divided left rail — toggles the sidebar's collapsed state. */
 export function SidebarIcon({ className }: { className?: string }) {
   return (
@@ -223,6 +265,39 @@ export function SwatchIcon({ className }: { className?: string }) {
     <Svg viewBox="0 0 48 48" className={className}>
       <rect x="4" y="12" width="20" height="20" rx="4" fill="currentColor" stroke="none" opacity="0.55" />
       <rect x="22" y="18" width="20" height="20" rx="4" />
+    </Svg>
+  );
+}
+
+/** A small dot easing along a dashed path into a larger one — used for the transitions CSS doc. */
+export function TransitionIcon({ className }: { className?: string }) {
+  return (
+    <Svg viewBox="0 0 48 48" className={className}>
+      <path d="M10 24h20" strokeDasharray="2 5" opacity="0.5" />
+      <circle cx="10" cy="24" r="5" />
+      <circle cx="34" cy="24" r="8" fill="currentColor" stroke="none" opacity="0.55" />
+    </Svg>
+  );
+}
+
+/** A progress track filling under a scroll marker — used for the animation-timeline CSS doc. */
+export function TimelineIcon({ className }: { className?: string }) {
+  return (
+    <Svg viewBox="0 0 48 48" className={className}>
+      <rect x="4" y="21" width="40" height="6" rx="3" />
+      <rect x="4" y="21" width="24" height="6" rx="3" fill="currentColor" stroke="none" opacity="0.55" />
+      <path d="M28 10v8M28 30v8" />
+    </Svg>
+  );
+}
+
+/** A disclosure triangle rotating open beside a growing panel — used for the animating-details CSS doc. */
+export function DisclosureIcon({ className }: { className?: string }) {
+  return (
+    <Svg viewBox="0 0 48 48" className={className}>
+      <path d="M8 15l6 5-6 5" strokeLinejoin="round" />
+      <rect x="20" y="10" width="20" height="8" rx="2" opacity="0.5" />
+      <rect x="20" y="22" width="20" height="16" rx="2" fill="currentColor" stroke="none" opacity="0.55" />
     </Svg>
   );
 }
