@@ -17,7 +17,7 @@ function getInitialCollapsed(): boolean {
 }
 
 function navLinkClass({ isActive }: { isActive: boolean }, bordered = true) {
-  return `flex items-center gap-2.5 py-2 pr-2 pl-3 text-[16px] leading-6 font-medium no-underline transition-colors duration-150 ${
+  return `flex items-center gap-2.5 py-1.5 pr-2 pl-3 text-[17px] leading-6 font-medium no-underline transition-colors duration-150 ${
     bordered ? "border-l-2" : ""
   } ${
     isActive
@@ -132,7 +132,7 @@ export default function Sidebar() {
     >
       <nav
         aria-label="Site"
-        className={`sticky top-0 max-h-svh overflow-y-auto py-8 ${collapsed ? "px-3" : "px-5"}`}
+        className={`sticky top-0 max-h-svh overflow-y-auto py-6 ${collapsed ? "px-3" : "px-4"}`}
       >
         <button
           type="button"
@@ -140,14 +140,14 @@ export default function Sidebar() {
           aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}
           aria-pressed={collapsed}
           title={collapsed ? "Expand sidebar" : "Collapse sidebar"}
-          className={`mb-4 flex h-9 w-9 items-center justify-center rounded-md text-muted transition-colors duration-150 hover:bg-fg hover:text-fg-invert ${
+          className={`mb-3 flex h-9 w-9 items-center justify-center rounded-md text-muted transition-colors duration-150 hover:bg-fg hover:text-fg-invert ${
             collapsed ? "mx-auto" : "ml-auto"
           }`}
         >
           <SidebarIcon className="h-4 w-4" />
         </button>
 
-        <ul className="flex flex-col gap-1">
+        <ul className="flex flex-col gap-0.5">
           <NavItem to="/" end icon={HomeIcon} collapsed={collapsed}>
             Home
           </NavItem>
@@ -160,9 +160,9 @@ export default function Sidebar() {
         </ul>
 
         {!collapsed && docs.length > 0 && (
-          <details open className="sidebar-details mt-8">
+          <details open className="sidebar-details mt-5">
             <SectionLabel>Frontend Best Practices</SectionLabel>
-            <ul className="flex flex-col gap-1 pl-3">
+            <ul className="flex flex-col gap-0.5 pl-2">
               {docs.map((article) => {
                 const isActive = article.slug === activeSlug;
                 const articleHeadings = isActive ? headings : [];
@@ -177,13 +177,13 @@ export default function Sidebar() {
                             {article.title}
                           </NavLink>
                         </summary>
-                        <ul className="ml-6 flex flex-col gap-1">
+                        <ul className="ml-4 flex flex-col gap-0.5">
                           {articleHeadings.map((heading) => (
                             <li key={heading.id} className={heading.level === 3 ? "pl-3" : ""}>
                               <a
                                 href={`#${heading.id}`}
                                 onClick={scrollToId(heading.id)}
-                                className="block rounded-md px-2 py-1.5 text-[15px] leading-6 font-medium text-muted no-underline transition-colors duration-150 hover:text-fg"
+                                className="block rounded-md px-2 py-1.5 text-[16px] leading-6 font-medium text-muted no-underline transition-colors duration-150 hover:text-fg"
                               >
                                 {heading.text}
                               </a>
@@ -206,9 +206,9 @@ export default function Sidebar() {
         )}
 
         {!collapsed && cssDocs.length > 0 && (
-          <details open className="sidebar-details mt-8">
+          <details open className="sidebar-details mt-5">
             <SectionLabel>CSS Docs</SectionLabel>
-            <ul className="flex flex-col gap-1 pl-3">
+            <ul className="flex flex-col gap-0.5 pl-2">
               {cssDocs.map((doc) => {
                 const isActive = doc.slug === activeCssDocSlug;
                 const docHeadings = isActive ? cssDocHeadings : [];
@@ -223,13 +223,13 @@ export default function Sidebar() {
                             {doc.title}
                           </NavLink>
                         </summary>
-                        <ul className="ml-6 flex flex-col gap-1">
+                        <ul className="ml-4 flex flex-col gap-0.5">
                           {docHeadings.map((heading) => (
                             <li key={heading.id} className={heading.level === 3 ? "pl-3" : ""}>
                               <a
                                 href={`#${heading.id}`}
                                 onClick={scrollToId(heading.id)}
-                                className="block rounded-md px-2 py-1.5 text-[15px] leading-6 font-medium text-muted no-underline transition-colors duration-150 hover:text-fg"
+                                className="block rounded-md px-2 py-1.5 text-[16px] leading-6 font-medium text-muted no-underline transition-colors duration-150 hover:text-fg"
                               >
                                 {heading.text}
                               </a>
@@ -254,9 +254,9 @@ export default function Sidebar() {
         )}
 
         {!collapsed && rest.length > 0 && (
-          <details open className="sidebar-details mt-8">
+          <details open className="sidebar-details mt-5">
             <SectionLabel>More</SectionLabel>
-            <ul className="flex flex-col gap-1 pl-3">
+            <ul className="flex flex-col gap-0.5 pl-2">
               {rest.map((article) => (
                 <NavItem key={article.slug} to={`/articles/${article.slug}`}>
                   {article.title}
