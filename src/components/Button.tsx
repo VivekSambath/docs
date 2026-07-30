@@ -2,7 +2,7 @@ import type { ComponentPropsWithoutRef } from "react";
 import { Link, type LinkProps } from "react-router-dom";
 
 type CommonProps = {
-  variant?: "solid" | "outline" | "shadow";
+  variant?: "solid" | "outline";
 };
 
 const base =
@@ -11,8 +11,6 @@ const base =
 const variants = {
   solid: "border border-fg bg-fg text-fg-invert hover:bg-fg-invert hover:text-fg",
   outline: "border border-fg bg-transparent text-fg hover:bg-fg hover:text-fg-invert",
-  shadow:
-    "border-0 bg-bg text-fg shadow-lg shadow-(--color-btn-shadow) transition-shadow hover:shadow-md",
 };
 
 type ButtonAsLink = CommonProps & LinkProps;
