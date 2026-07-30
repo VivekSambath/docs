@@ -1,86 +1,5 @@
 import type { DocArticle } from "../articles";
 
-// --- Live demo HTML generators ----------------------------------------------
-// Sandboxed iframes (sandbox="", no scripts) — real <label>/<input> and <a>
-// elements are still natively interactive, so these need no JavaScript.
-
-function fieldPage(inner: string) {
-  return `<!doctype html>
-<html>
-<head>
-<style>
-  * { box-sizing: border-box; }
-  html, body { margin: 0; height: 100%; }
-  body {
-    font: 13px/1.4 system-ui, sans-serif;
-    color: #171717;
-    background: #fff;
-    padding: 20px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-  }
-  label { display: block; margin-bottom: 6px; font-weight: 600; font-size: 12px; }
-  input {
-    width: 100%;
-    max-width: 220px;
-    padding: 10px 12px;
-    border: 1px solid #a3a3a3;
-    border-radius: 6px;
-    font: inherit;
-  }
-  input:focus { outline: 2px solid #0060df; outline-offset: 1px; }
-</style>
-</head>
-<body>${inner}</body>
-</html>`;
-}
-
-const placeholderOnlyHtml = () =>
-  fieldPage(`<input type="text" placeholder="Full name" />`);
-
-const visibleLabelHtml = () =>
-  fieldPage(
-    `<div style="width:100%;max-width:220px;"><label for="name">Full name</label><input id="name" type="text" /></div>`,
-  );
-
-function linkListHtml(kind: "vague" | "descriptive") {
-  const links =
-    kind === "vague"
-      ? ["Click here", "Read more", "Learn more"]
-      : [
-          "Read our full shipping policy",
-          "Compare pricing plans",
-          "Download the 2026 tax guide (PDF)",
-        ];
-  const items = links
-    .map((text) => `<li><a href="#">${text}</a></li>`)
-    .join("");
-  return `<!doctype html>
-<html>
-<head>
-<style>
-  * { box-sizing: border-box; }
-  html, body { margin: 0; height: 100%; }
-  body {
-    font: 13px/1.6 system-ui, sans-serif;
-    color: #171717;
-    background: #fff;
-    padding: 20px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-  }
-  ul { margin: 0; padding: 0; list-style: none; width: 100%; max-width: 240px; }
-  li { border-bottom: 1px solid #e5e5e5; }
-  li:last-child { border-bottom: none; }
-  a { display: block; padding: 8px 4px; color: #0060df; }
-</style>
-</head>
-<body><ul>${items}</ul></body>
-</html>`;
-}
-
 export const readingDisabilities: DocArticle = {
   kind: "doc",
   slug: "reading-disabilities",
@@ -93,7 +12,21 @@ export const readingDisabilities: DocArticle = {
     { kind: "heading", text: "Introduction" },
     {
       kind: "paragraph",
-      text: "\"Reading disabilities\" is a broad umbrella — dyslexia, ADHD-related fatigue, low literacy, second-language readers, and plain cognitive load under stress. It's not a niche audience: almost everyone's reading ability dips under fatigue or time pressure. The fixes are the same for all of it, and none of them require a redesign — just wording, structure, and semantic markup you can ship directly.",
+      text: "\"Reading disabilities\" is a broad umbrella:",
+    },
+    {
+      kind: "list",
+      items: [
+        "Dyslexia.",
+        "ADHD-related fatigue.",
+        "Low literacy.",
+        "Second-language readers.",
+        "Plain cognitive load under stress.",
+      ],
+    },
+    {
+      kind: "paragraph",
+      text: "It's not a niche audience, and the fixes are just **wording, structure, and semantic markup** — ==no redesign required==.",
     },
     {
       kind: "mindmap",
@@ -110,11 +43,7 @@ export const readingDisabilities: DocArticle = {
     { kind: "heading", text: "Cognitive Load" },
     {
       kind: "paragraph",
-      text: "Cognitive load is how much mental effort it takes to understand something — and every person has a limited attention budget, shared with the actual task, stress, and distractions.",
-    },
-    {
-      kind: "paragraph",
-      text: "Dense paragraphs and jargon spend that budget just decoding the words. Short sentences and plain language don't simplify the interface — they leave more brainpower for the user's actual goal.",
+      text: "Cognitive load is the mental effort it takes to understand something, drawn from the same limited attention budget as the task itself. Dense paragraphs and jargon spend that budget decoding words instead of leaving it for the user's actual goal.",
     },
     {
       kind: "ascii",
@@ -126,97 +55,208 @@ export const readingDisabilities: DocArticle = {
     {
       kind: "callout",
       variant: "tip",
-      text: "These techniques help everyone, not just people with a diagnosed reading disability. Bright sunlight on a phone screen, a bad night's sleep, a stressful day, a slow connection, reading in your second language — situational impairment is far more common than permanent impairment, and it hits every one of your users eventually.",
+      text: "These techniques help everyone, not just people with a diagnosed reading disability. Bright sunlight on a phone screen, a bad night's sleep, a stressful day, a slow connection, reading in your second language — ==situational impairment is far more common than permanent impairment==, and it hits every one of your users eventually.",
     },
 
     { kind: "heading", text: "Plain Language & Short Sentences" },
     {
       kind: "paragraph",
-      text: "Long sentences with multiple clauses force the reader to hold more in their head before the meaning resolves. Swapping formal or legalistic phrasing for plain verbs and shorter sentences doesn't dumb the content down — it just removes the extra decoding work that wasn't adding any real information.",
+      text: "Long sentences with multiple clauses force the reader to hold more in their head before the meaning resolves. Plain verbs and shorter sentences aren't dumbing content down — they cut decoding work that wasn't adding real information.",
     },
     {
-      kind: "comparison",
-      before: {
-        label: "Original",
-        points: [
-          "\"In the event that you wish to terminate your subscription, please be advised that a written notice period of no less than thirty (30) days prior to the desired cancellation date is required in order to process your request.\"",
-          "47 words, one sentence, three nested clauses",
-        ],
-      },
-      after: {
-        label: "Rewritten",
-        points: [
-          "\"To cancel your subscription, send us written notice at least 30 days before the date you want it to end.\"",
-          "22 words, active voice, one idea per clause",
-        ],
-      },
+      kind: "demo",
+      panes: [
+        {
+          label: "Legalistic, one long sentence",
+          status: "bad",
+          editable: true,
+          htmlSource: `<p class="copy">In the event that you wish to terminate your subscription, please be advised that a written notice period of no less than thirty (30) days prior to the desired cancellation date is required in order to process your request.</p>`,
+          cssSource: `.copy {
+  max-width: 34ch;
+  font-size: 15px;
+  line-height: 1.6;
+}`,
+        },
+        {
+          label: "Plain, short sentence",
+          status: "good",
+          editable: true,
+          htmlSource: `<p class="copy">To cancel your subscription, send us written notice at least 30 days before the date you want it to end.</p>`,
+          cssSource: `.copy {
+  max-width: 34ch;
+  font-size: 15px;
+  line-height: 1.6;
+}`,
+        },
+      ],
+      height: 160,
+      caption:
+        "Same information, same width column — the plain version resolves in one pass instead of forcing the reader to hold three nested clauses in mind at once. Edit either paragraph and compare how long it takes to parse.",
     },
 
     { kind: "heading", text: "Chunking Content" },
     {
       kind: "paragraph",
-      text: "A wall of text is intimidating before a reader has parsed a single word of it — the sheer density signals \"this will take effort,\" and some readers will bail before they start. Breaking the same content into short paragraphs, real subheadings, and bullet lists lets readers scan for what they need instead of processing everything linearly.",
+      text: "A wall of text signals \"this will take effort\" before a reader parses a single word, and some will bail before starting. Short paragraphs, real subheadings, and lists let readers scan for what they need instead of processing everything linearly.",
     },
     {
-      kind: "code",
-      language: "html",
-      label: "Bad",
-      code: "<p>\n  To set up shipping you'll need to add a return address, choose which\n  countries you ship to, decide whether you offer free shipping over a\n  certain order amount, set a flat rate or weight-based rate table, and\n  configure how long orders typically take to arrive since this shows up\n  on the product page and affects customer expectations and support\n  volume if it's wrong, so double check it before publishing your store.\n</p>",
-    },
-    {
-      kind: "code",
-      language: "html",
-      label: "Good",
-      code: "<h3>Set up shipping</h3>\n<ol>\n  <li>Add a return address.</li>\n  <li>Choose which countries you ship to.</li>\n  <li>Set a flat rate, or a rate based on order weight.</li>\n  <li>Optional: offer free shipping over a set order amount.</li>\n  <li>Add an estimated delivery time. This shows up on your product page.</li>\n</ol>",
+      kind: "demo",
+      panes: [
+        {
+          label: "Dense wall of text",
+          status: "bad",
+          editable: true,
+          htmlSource: `<p class="wall">To set up shipping you'll need to add a return address, choose which countries you ship to, decide whether you offer free shipping over a certain order amount, set a flat rate or weight-based rate table, and configure how long orders typically take to arrive since this shows up on the product page and affects customer expectations and support volume if it's wrong, so double check it before publishing your store.</p>`,
+          cssSource: `.wall {
+  max-width: 32ch;
+  font-size: 14px;
+  line-height: 1.5;
+}`,
+          tailwind: '<p class="max-w-[32ch] text-sm leading-relaxed">',
+        },
+        {
+          label: "Chunked into a list",
+          status: "good",
+          editable: true,
+          htmlSource: `<h3 class="title">Set up shipping</h3>
+<ol class="steps">
+  <li>Add a return address.</li>
+  <li>Choose which countries you ship to.</li>
+  <li>Set a flat rate, or a rate based on order weight.</li>
+  <li>Optional: offer free shipping over a set order amount.</li>
+  <li>Add an estimated delivery time. This shows up on your product page.</li>
+</ol>`,
+          cssSource: `.title {
+  margin: 0 0 8px;
+  font-size: 15px;
+}
+.steps {
+  max-width: 32ch;
+  margin: 0;
+  padding-left: 20px;
+  font-size: 14px;
+  line-height: 1.6;
+}
+.steps li + li {
+  margin-top: 4px;
+}`,
+          tailwind: '<h3 class="mb-2 text-base"> / <ol class="max-w-[32ch] list-decimal pl-5 text-sm leading-relaxed [&>li+li]:mt-1">',
+        },
+      ],
+      height: 220,
+      caption:
+        "Same five facts, two shapes. The wall makes you read every word to find the one you need; the chunked list lets you scan it in a glance. Edit the CSS to see how spacing and list markers affect scannability.",
     },
 
     { kind: "heading", text: "Better Headings" },
     {
       kind: "paragraph",
-      text: "A heading's job is to let someone decide, without reading the paragraph underneath it, whether that section is relevant to them. A vague heading fails at that job and forces the reader to read everything just to find the one part they needed.",
+      text: "A heading's job is to let someone decide, without reading the paragraph underneath it, whether that section is relevant to them. A vague heading fails at that and forces readers to read everything just to find the one part they needed.",
     },
     {
-      kind: "comparison",
-      before: {
-        label: "Vague",
-        points: ["\"Details\"", "\"More Information\"", "\"Overview\""],
-      },
-      after: {
-        label: "Descriptive",
-        points: [
-          "\"Shipping and delivery times\"",
-          "\"How to reset your password\"",
-          "\"What happens after you submit this form\"",
-        ],
-      },
+      kind: "demo",
+      panes: [
+        {
+          label: "Vague headings",
+          status: "bad",
+          editable: true,
+          htmlSource: `<article class="doc">
+  <h3>Details</h3>
+  <p>Orders placed before 2pm ship the same day.</p>
+  <h3>More Information</h3>
+  <p>Contact support within 30 days for a refund.</p>
+</article>`,
+          cssSource: `.doc { max-width: 34ch; }
+.doc h3 { margin: 12px 0 2px; font-size: 14px; }
+.doc h3:first-child { margin-top: 0; }
+.doc p { margin: 0; font-size: 13px; line-height: 1.5; color: #525252; }`,
+        },
+        {
+          label: "Descriptive headings",
+          status: "good",
+          editable: true,
+          htmlSource: `<article class="doc">
+  <h3>Shipping and delivery times</h3>
+  <p>Orders placed before 2pm ship the same day.</p>
+  <h3>Refund policy</h3>
+  <p>Contact support within 30 days for a refund.</p>
+</article>`,
+          cssSource: `.doc { max-width: 34ch; }
+.doc h3 { margin: 12px 0 2px; font-size: 14px; }
+.doc h3:first-child { margin-top: 0; }
+.doc p { margin: 0; font-size: 13px; line-height: 1.5; color: #525252; }`,
+        },
+      ],
+      height: 190,
+      caption:
+        "Try scanning just the headings in each pane, without reading the paragraphs underneath. Only the descriptive version tells you where the refund information actually is.",
     },
 
     { kind: "heading", text: "Better Buttons" },
     {
       kind: "paragraph",
-      text: "A button's label is a promise about what happens next. \"Submit\" and \"Click Here\" make the reader guess; a button that names the actual action removes the guesswork and reduces the hesitation that shows up right before people abandon a form.",
+      text: "A button's label is ==a promise about what happens next==. \"Submit\" makes the reader guess; **naming the actual action** removes the hesitation that shows up right before people abandon a form.",
     },
     {
       kind: "comparison",
       before: {
         label: "Vague",
-        points: ["\"Submit\"", "\"Click Here\"", "\"OK\"", "\"Continue\""],
+        points: ["\"Submit\"", "\"Click Here\"", "\"OK\""],
       },
       after: {
         label: "Descriptive",
         points: [
           "\"Create account\"",
           "\"Download invoice (PDF)\"",
-          "\"Got it, continue\"",
           "\"Review your order\"",
         ],
       },
+    },
+    {
+      kind: "demo",
+      panes: [
+        {
+          label: "Vague button label",
+          status: "bad",
+          editable: true,
+          htmlSource: `<button class="btn">Submit</button>`,
+          cssSource: `.btn {
+  padding: 10px 18px;
+  border: 1px solid #171717;
+  border-radius: 6px;
+  background: #171717;
+  color: #fff;
+  font: inherit;
+  font-weight: 600;
+}`,
+          tailwind: '<button class="rounded-md border border-neutral-900 bg-neutral-900 px-4.5 py-2.5 font-semibold text-white">',
+        },
+        {
+          label: "Descriptive button label",
+          status: "good",
+          editable: true,
+          htmlSource: `<button class="btn">Create account</button>`,
+          cssSource: `.btn {
+  padding: 10px 18px;
+  border: 1px solid #171717;
+  border-radius: 6px;
+  background: #171717;
+  color: #fff;
+  font: inherit;
+  font-weight: 600;
+}`,
+          tailwind: '<button class="rounded-md border border-neutral-900 bg-neutral-900 px-4.5 py-2.5 font-semibold text-white">',
+        },
+      ],
+      height: 100,
+      caption:
+        "Same button, same styling — only the label changes. \"Submit\" promises nothing; \"Create account\" tells you exactly what happens when you click.",
     },
 
     { kind: "heading", text: "Better Links" },
     {
       kind: "paragraph",
-      text: "\"Click here\" and \"read more\" describe the act of clicking, not the destination — meaningless out of context, and screen readers often list links stripped of that context.",
+      text: "\"Click here\" and \"read more\" describe the act of clicking, not the destination — meaningless out of context.",
     },
     {
       kind: "comparison",
@@ -244,23 +284,69 @@ export const readingDisabilities: DocArticle = {
         {
           label: "Vague, out of context",
           status: "bad",
-          html: () => linkListHtml("vague"),
+          editable: true,
+          htmlSource: `<ul class="links">
+  <li><a href="#">Click here</a></li>
+  <li><a href="#">Read more</a></li>
+  <li><a href="#">Learn more</a></li>
+</ul>`,
+          cssSource: `.links {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  width: 100%;
+  max-width: 240px;
+}
+.links li {
+  border-bottom: 1px solid #e5e5e5;
+}
+.links li:last-child {
+  border-bottom: none;
+}
+.links a {
+  display: block;
+  padding: 8px 4px;
+  color: #0060df;
+}`,
         },
         {
           label: "Descriptive, out of context",
           status: "good",
-          html: () => linkListHtml("descriptive"),
+          editable: true,
+          htmlSource: `<ul class="links">
+  <li><a href="#">Read our full shipping policy</a></li>
+  <li><a href="#">Compare pricing plans</a></li>
+  <li><a href="#">Download the 2026 tax guide (PDF)</a></li>
+</ul>`,
+          cssSource: `.links {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  width: 100%;
+  max-width: 240px;
+}
+.links li {
+  border-bottom: 1px solid #e5e5e5;
+}
+.links li:last-child {
+  border-bottom: none;
+}
+.links a {
+  display: block;
+  padding: 8px 4px;
+  color: #0060df;
+}`,
         },
       ],
       height: 170,
       caption:
-        "This is effectively a screen reader's link-list view — every surrounding sentence stripped away, only the link text left. One column is a guessing game; the other tells you exactly where each link goes.",
+        "This is effectively a screen reader's link-list view — every surrounding sentence stripped away, only the link text left. One column is a guessing game; the other tells you exactly where each link goes. Try tabbing through each list.",
     },
 
     { kind: "heading", text: "Better Forms" },
     {
       kind: "paragraph",
-      text: "A placeholder is not a label. It disappears the moment someone starts typing, so by the time they pause to double-check what field they're in, the hint that told them is already gone. Keep labels visible above or beside the field at all times, put one field per row so nothing has to be scanned side to side, and group related fields under a shared heading.",
+      text: "A placeholder is not a label — it disappears the moment someone starts typing, so the hint is gone by the time they pause to double-check the field. Keep labels visible at all times, one field per row.",
     },
     {
       kind: "demo",
@@ -268,14 +354,52 @@ export const readingDisabilities: DocArticle = {
         {
           label: "placeholder only",
           status: "bad",
-          code: '<input placeholder="Full name" />',
-          html: placeholderOnlyHtml,
+          editable: true,
+          tailwind: '<input class="w-full max-w-55 rounded-md border border-neutral-400 px-3 py-2.5">',
+          htmlSource: `<input type="text" placeholder="Full name" />`,
+          cssSource: `input {
+  width: 100%;
+  max-width: 220px;
+  padding: 10px 12px;
+  border: 1px solid #a3a3a3;
+  border-radius: 6px;
+  font: inherit;
+}
+input:focus {
+  outline: 2px solid #0060df;
+  outline-offset: 1px;
+}`,
         },
         {
           label: "visible label",
           status: "good",
-          code: '<label for="name">Full name</label>\n<input id="name" />',
-          html: visibleLabelHtml,
+          editable: true,
+          tailwind: '<label class="mb-1.5 block text-xs font-semibold" for="name">Full name</label>\n<input class="w-full max-w-55 rounded-md border border-neutral-400 px-3 py-2.5" id="name">',
+          htmlSource: `<div class="field">
+  <label for="name">Full name</label>
+  <input id="name" type="text" />
+</div>`,
+          cssSource: `.field {
+  width: 100%;
+  max-width: 220px;
+}
+label {
+  display: block;
+  margin-bottom: 6px;
+  font-weight: 600;
+  font-size: 12px;
+}
+input {
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid #a3a3a3;
+  border-radius: 6px;
+  font: inherit;
+}
+input:focus {
+  outline: 2px solid #0060df;
+  outline-offset: 1px;
+}`,
         },
       ],
       height: 130,
@@ -298,32 +422,93 @@ export const readingDisabilities: DocArticle = {
     { kind: "heading", text: "Better Error Messages" },
     {
       kind: "paragraph",
-      text: "\"Invalid input\" tells someone that something is wrong without telling them what, or how to fix it. A good error message names the field, explains the actual problem in plain words, and says what to do next.",
+      text: "\"Invalid input\" tells someone that something is wrong without telling them what, or how to fix it. A good error message does three things:",
     },
     {
-      kind: "comparison",
-      before: {
-        label: "Vague",
-        points: [
-          "\"Invalid input.\"",
-          "\"Error 400.\"",
-          "\"Something went wrong.\"",
-        ],
-      },
-      after: {
-        label: "Specific and actionable",
-        points: [
-          "\"Enter your email in the format name@example.com.\"",
-          "\"Your password needs at least 8 characters and one number.\"",
-          "\"We couldn't save your changes. Check your internet connection and try again.\"",
-        ],
-      },
+      kind: "list",
+      items: [
+        "Names the field.",
+        "Explains the problem in plain words.",
+        "Says what to do next.",
+      ],
+    },
+    {
+      kind: "demo",
+      panes: [
+        {
+          label: "Vague error",
+          status: "bad",
+          editable: true,
+          htmlSource: `<div class="field">
+  <label for="email1">Email address</label>
+  <input id="email1" type="text" value="not-an-email" />
+  <p class="error">Invalid input.</p>
+</div>`,
+          cssSource: `.field {
+  width: 100%;
+  max-width: 240px;
+}
+label {
+  display: block;
+  margin-bottom: 6px;
+  font-weight: 600;
+  font-size: 12px;
+}
+input {
+  width: 100%;
+  padding: 9px 10px;
+  border: 1px solid #dc2626;
+  border-radius: 6px;
+  font: inherit;
+}
+.error {
+  margin: 6px 0 0;
+  font-size: 12px;
+  color: #dc2626;
+}`,
+        },
+        {
+          label: "Specific, actionable error",
+          status: "good",
+          editable: true,
+          htmlSource: `<div class="field">
+  <label for="email2">Email address</label>
+  <input id="email2" type="text" value="not-an-email" />
+  <p class="error">Enter your email in the format name@example.com.</p>
+</div>`,
+          cssSource: `.field {
+  width: 100%;
+  max-width: 240px;
+}
+label {
+  display: block;
+  margin-bottom: 6px;
+  font-weight: 600;
+  font-size: 12px;
+}
+input {
+  width: 100%;
+  padding: 9px 10px;
+  border: 1px solid #dc2626;
+  border-radius: 6px;
+  font: inherit;
+}
+.error {
+  margin: 6px 0 0;
+  font-size: 12px;
+  color: #dc2626;
+}`,
+        },
+      ],
+      height: 150,
+      caption:
+        "Both fields show the same invalid value. Only the second message tells the reader what format is expected, so they can fix it without guessing.",
     },
 
     { kind: "heading", text: "Accessible Documentation Writing" },
     {
       kind: "paragraph",
-      text: "Everything above applies double to docs and tooltips, since people reach for them exactly when they're already stuck. Keep one idea per paragraph, prefer a concrete example over an abstract description, and split nested conditions (\"if X, unless Y, except Z\") into a plain common case plus a separate note for exceptions.",
+      text: "Everything above applies double to docs and tooltips, since people reach for them exactly when they're already stuck. Prefer a concrete example over an abstract description, and split nested conditions (\"if X, unless Y, except Z\") into a plain common case plus a separate note for exceptions.",
     },
     {
       kind: "callout",
@@ -334,7 +519,7 @@ export const readingDisabilities: DocArticle = {
     { kind: "heading", text: "Practical UI Examples" },
     {
       kind: "paragraph",
-      text: "The patterns above show up constantly in the same handful of screens. Here's what they look like applied to five common UI contexts.",
+      text: "The patterns above, applied to five common UI contexts.",
     },
 
     { kind: "heading", text: "Login page", level: 3 },
@@ -441,9 +626,7 @@ export const readingDisabilities: DocArticle = {
         "Walls of text with no subheadings, forcing readers to scan everything to find the one relevant sentence.",
         "Technical jargon or internal error codes surfacing directly in user-facing error messages.",
         "Using placeholder text as the only label on a form field, so the hint vanishes the moment someone starts typing.",
-        "\"Click here\" or \"read more\" as link text, which is meaningless out of context and unhelpful for screen reader users navigating by link list.",
-        "Burying the primary action among several equally-styled buttons instead of making it visually and verbally obvious.",
-        "Writing instructions as nested conditionals (\"if X, unless Y, except when Z\") instead of stating the common case plainly.",
+        "\"Click here\" or \"read more\" as link text, meaningless out of context and unhelpful for screen reader users navigating by link list.",
       ],
     },
 
@@ -452,19 +635,22 @@ export const readingDisabilities: DocArticle = {
       kind: "list",
       items: [
         "Write short sentences with one idea each — split anything with more than one \"and\" or \"but\".",
-        "Prefer plain, everyday words over formal or technical ones wherever the meaning is the same.",
         "Keep labels visible at all times; never rely on a placeholder as the only label.",
         "Make buttons and links name the actual action or destination, not the act of clicking.",
-        "Chunk long content with real headings, short paragraphs, and lists instead of a single dense block.",
         "Write error messages that name the problem and the fix, not just that something went wrong.",
-        "Run copy through a readability check before shipping, especially for docs and onboarding flows.",
       ],
     },
 
     { kind: "heading", text: "Browser Support" },
     {
       kind: "paragraph",
-      text: "Plain language has no browser dependency — it's just wording. What does depend on the browser is the markup underneath: a real <label>, <button>, and heading hierarchy (h1–h3, in order) are what let screen readers and reader-mode features (Safari Reader, Firefox Reader View) reconstruct the page correctly, all broadly supported today.",
+      text: "Plain language has no browser dependency, but the markup underneath does: a real <label>, <button>, and ordered heading hierarchy (h1–h3) are what let screen readers and reader-mode features reconstruct the page correctly — all broadly supported today.",
+    },
+    {
+      kind: "caniuse",
+      feature: "mdn-html_elements_label",
+      title: "<label> element",
+      caption: "The <label>/<input> association behind the visible-label demo above — supported in every modern browser.",
     },
 
     { kind: "heading", text: "Key Takeaways" },
@@ -473,9 +659,7 @@ export const readingDisabilities: DocArticle = {
       items: [
         "Reading disabilities and reading difficulties cover a wide, largely invisible range of users — this is not a niche audience.",
         "Cognitive load is a limited budget; dense copy spends it before the reader even reaches the task.",
-        "Short sentences, plain words, and real headings reduce that load without dumbing the content down.",
         "Buttons, links, and error messages should name the actual action, destination, or problem — never leave the reader guessing.",
-        "Labels should stay visible; placeholders are not a substitute for a <label>.",
         "These fixes help everyone under situational impairment — tired, stressed, or reading in a second language — not just users with a diagnosed condition.",
       ],
     },

@@ -48,16 +48,38 @@ export type DocMindMap = {
   branches: DocMindMapBranch[];
   caption?: string;
 };
-export type DocDemoPane = {
+export type DocDemoPaneBase = {
   label: string;
   status?: "bad" | "good";
-  /** Pure CSS shown above the live preview. */
-  code?: string;
   /** Equivalent Tailwind utility classes, shown under the CSS. */
   tailwind?: string;
+};
+
+/** Static, read-only pane — today's behavior. */
+export type DocDemoPaneStatic = DocDemoPaneBase & {
+  editable?: false;
+  /** Pure CSS shown above the live preview. */
+  code?: string;
   /** srcDoc generator. Receives the shared toggle's on/off state (false if this demo has no toggle). */
   html: (on: boolean) => string;
 };
+
+/**
+ * Editable, CodePen-style pane — the renderer wraps `htmlSource`/`cssSource`
+ * into a full document (shared minimal shell) and re-renders live as the
+ * reader edits either textarea. `html`/`code` are ignored for this shape.
+ */
+export type DocDemoPaneEditable = DocDemoPaneBase & {
+  editable: true;
+  /** Body markup, edited live in an HTML textarea. */
+  htmlSource: string;
+  /** CSS, edited live in a CSS textarea. */
+  cssSource: string;
+  /** Optional per-toggle-state override of the starting htmlSource/cssSource. */
+  onSource?: { htmlSource?: string; cssSource: string };
+};
+
+export type DocDemoPane = DocDemoPaneStatic | DocDemoPaneEditable;
 export type DocDemoToggle = {
   label: string;
   defaultOn?: boolean;

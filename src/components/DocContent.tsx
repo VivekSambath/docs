@@ -1,13 +1,20 @@
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import type { ReactNode } from "react";
-import type { DocSection } from "../content/articles";
+import type { DocDemoPaneEditable, DocSection } from "../content/articles";
 import { slugify } from "./docToc";
+import { renderInline } from "./inline";
 import Reveal from "./Reveal";
 
 const calloutLabel: Record<string, string> = {
   tip: "Tip",
   note: "Note",
   warning: "Warning",
+};
+
+const calloutAccent: Record<string, string> = {
+  tip: "border-green-600/70",
+  note: "border-accent",
+  warning: "border-amber-500/80",
 };
 
 // Small monochrome line icons — stroke-only (no fills) to match the site's
@@ -36,6 +43,77 @@ const calloutIcon: Record<string, ReactNode> = {
   ),
 };
 
+function CopyButton({ text }: { text: string }) {
+  const [copied, setCopied] = useState(false);
+
+  async function copy() {
+    try {
+      await navigator.clipboard.writeText(text);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 1600);
+    } catch {
+      // clipboard may be unavailable (e.g. a sandboxed preview) — button just does nothing
+    }
+  }
+
+  return (
+    <button
+      type="button"
+      onClick={copy}
+      aria-label={copied ? "Copied" : "Copy code"}
+      className={`inline-flex items-center gap-1.5 rounded border border-transparent px-1.5 py-0.5 font-medium transition-colors duration-150 ${copied ? "text-green-600" : "text-muted hover:border-border hover:text-fg"}`}
+    >
+      {copied ? (
+        <svg viewBox="0 0 16 16" className="h-3.5 w-3.5" fill="none" stroke="currentColor" strokeWidth="1.6" aria-hidden="true">
+          <path d="m3 8.5 3.5 3.5L13 5" strokeLinecap="round" strokeLinejoin="round" />
+        </svg>
+      ) : (
+        <svg viewBox="0 0 16 16" className="h-3.5 w-3.5" fill="none" stroke="currentColor" strokeWidth="1.4" aria-hidden="true">
+          <rect x="5.5" y="5.5" width="8" height="8" rx="1.5" />
+          <path d="M10.5 3.5v-1a1 1 0 0 0-1-1h-6a1 1 0 0 0-1 1v6a1 1 0 0 0 1 1h1" strokeLinecap="round" />
+        </svg>
+      )}
+      {copied ? "Copied" : "Copy"}
+    </button>
+  );
+}
+
+/**
+ * Hover "#" button on section headings — scrolls the heading into view and
+ * copies a shareable deep link. Built as a button (not a native <a href="#id">)
+ * because the hash router owns location.hash: the deep-link format is
+ * origin/path#/route#heading-id, which Article.tsx resolves manually.
+ */
+function HeadingAnchor({ id }: { id: string }) {
+  const [copied, setCopied] = useState(false);
+
+  function copy() {
+    document.getElementById(id)?.scrollIntoView({ behavior: "smooth", block: "start" });
+    const [base, route = ""] = window.location.href.split("#");
+    navigator.clipboard
+      .writeText(`${base}#${route}#${id}`)
+      .then(() => {
+        setCopied(true);
+        setTimeout(() => setCopied(false), 1600);
+      })
+      .catch(() => {
+        // clipboard unavailable — scrolling still happened, which is the main job
+      });
+  }
+
+  return (
+    <button
+      type="button"
+      onClick={copy}
+      aria-label="Copy link to this section"
+      title="Copy link to this section"
+      className={`ml-3 align-middle font-mono text-[0.6em] font-normal transition-[opacity,color] duration-150 focus-visible:opacity-100 ${copied ? "text-green-600 opacity-100" : "text-accent opacity-0 hover:text-accent-hover group-hover:opacity-100"}`}
+    >
+      {copied ? "✓ copied" : "#"}
+    </button>
+  );
+}
+
 function CodeBlock({
   language,
   code,
@@ -53,19 +131,22 @@ function CodeBlock({
     <div className="mt-8">
       <div className="flex items-center justify-between rounded-t-md border border-b-0 border-border bg-surface px-4 py-2 text-xs text-muted">
         <span className="font-mono uppercase tracking-wide">{language}</span>
-        {label && (
-          <span className="font-medium">
-            {label === "Bad" ? "✕ Bad" : "✓ Good"}
-          </span>
-        )}
+        <span className="flex items-center gap-3">
+          {label && (
+            <span className="font-medium">
+              {label === "Bad" ? "✕ Bad" : "✓ Good"}
+            </span>
+          )}
+          <CopyButton text={code} />
+        </span>
       </div>
       <pre
-        className={`overflow-x-auto border-x border-t border-border bg-bg p-4 text-sm ${tailwind ? "" : "rounded-b-md border-b"}`}
+        className={`overflow-x-auto border-x border-t border-border bg-bg p-4 text-base ${tailwind ? "" : "rounded-b-md border-b"}`}
       >
         <code className="font-mono">{code}</code>
       </pre>
       {tailwind && (
-        <pre className="overflow-x-auto rounded-b-md border border-border bg-bg p-4 text-sm">
+        <pre className="overflow-x-auto rounded-b-md border border-border bg-bg p-4 text-base">
           <code className="font-mono text-muted">
             <span className="mr-2 text-[10px] font-semibold uppercase tracking-wide text-muted">
               Tailwind
@@ -75,7 +156,7 @@ function CodeBlock({
         </pre>
       )}
       {caption && (
-        <p className="mt-2 text-sm text-muted">{caption}</p>
+        <p className="mt-2 text-base text-muted">{renderInline(caption)}</p>
       )}
     </div>
   );
@@ -105,21 +186,26 @@ function DemoBlock({ panes, toggle, height = 220, caption }: Extract<DocSection,
         </button>
       )}
       <div className={`grid gap-6 ${gridClass}`}>
-        {panes.map((pane, paneIndex) => (
-          <div key={paneIndex} className="min-w-0">
-            <div className="flex items-center justify-between rounded-t-md border border-b-0 border-border bg-surface px-4 py-2 text-xs text-muted">
-              <span className="font-medium">{pane.label}</span>
+        {panes
+          .filter((pane): pane is Extract<typeof pane, { editable?: false }> => !pane.editable)
+          .map((pane, paneIndex) => (
+          <div
+            key={paneIndex}
+            className={`min-w-0 overflow-hidden rounded-md border border-border ${pane.status === "bad" ? "border-t-2 border-t-red-500/70" : pane.status === "good" ? "border-t-2 border-t-green-600/70" : ""}`}
+          >
+            <div className="flex items-center justify-between border-b border-border bg-surface px-4 py-2 text-sm text-muted">
+              <span className="font-medium text-body">{pane.label}</span>
               {pane.status && (
                 <span className="font-medium">{demoStatusLabel[pane.status]}</span>
               )}
             </div>
             {pane.code && (
-              <pre className="overflow-x-auto border-x border-t border-border bg-bg p-3 text-xs">
+              <pre className="overflow-x-auto border-b border-border bg-bg p-3 text-base">
                 <code className="font-mono">{pane.code}</code>
               </pre>
             )}
             {pane.tailwind && (
-              <pre className="overflow-x-auto border-x border-t border-border bg-bg p-3 text-xs">
+              <pre className="overflow-x-auto border-b border-border bg-bg p-3 text-base">
                 <code className="font-mono text-muted">
                   <span className="mr-2 text-[10px] font-semibold uppercase tracking-wide text-muted">
                     Tailwind
@@ -134,16 +220,206 @@ function DemoBlock({ panes, toggle, height = 220, caption }: Extract<DocSection,
               srcDoc={pane.html(on)}
               sandbox=""
               style={{ height }}
-              className="block w-full rounded-b-md border border-border bg-bg"
+              className="block w-full bg-bg"
             />
           </div>
         ))}
       </div>
       {caption && (
-        <figcaption className="mt-2 text-sm text-muted">
-          {caption}
+        <figcaption className="mt-2 text-base text-muted">
+          {renderInline(caption)}
         </figcaption>
       )}
+    </figure>
+  );
+}
+
+// Wraps an editable pane's raw htmlSource/cssSource into a full document for
+// the sandboxed iframe. Kept deliberately minimal (box-sizing reset + system
+// font) so the reader's CSS is the only thing controlling the result.
+function buildEditableDoc(htmlSource: string, cssSource: string) {
+  return `<!doctype html>
+<html>
+<head>
+<style>
+  * { box-sizing: border-box; }
+  html, body { margin: 0; }
+  body { font: 14px/1.5 system-ui, sans-serif; color: #171717; background: #fff; padding: 16px; }
+${cssSource}
+</style>
+</head>
+<body>
+${htmlSource}
+</body>
+</html>`;
+}
+
+function EditablePane({ pane, on }: { pane: DocDemoPaneEditable; on: boolean }) {
+  const original = pane.onSource && on
+    ? { htmlSource: pane.onSource.htmlSource ?? pane.htmlSource, cssSource: pane.onSource.cssSource }
+    : { htmlSource: pane.htmlSource, cssSource: pane.cssSource };
+
+  const [htmlSource, setHtmlSource] = useState(original.htmlSource);
+  const [cssSource, setCssSource] = useState(original.cssSource);
+  const [dirty, setDirty] = useState(false);
+  const [lastOn, setLastOn] = useState(on);
+
+  // Toggle flipped and the reader hasn't hand-edited yet — load the new preset.
+  if (on !== lastOn) {
+    setLastOn(on);
+    if (!dirty) {
+      setHtmlSource(original.htmlSource);
+      setCssSource(original.cssSource);
+    }
+  }
+
+  const srcDoc = useMemo(() => buildEditableDoc(htmlSource, cssSource), [htmlSource, cssSource]);
+
+  function reset() {
+    setHtmlSource(original.htmlSource);
+    setCssSource(original.cssSource);
+    setDirty(false);
+  }
+
+  const editorClass =
+    "block w-full resize-y overflow-auto border-x border-border bg-bg p-3 font-mono text-sm text-body focus:outline-none focus:bg-surface/40";
+
+  const statusAccent =
+    pane.status === "bad"
+      ? "border-t-2 border-t-red-500/70"
+      : pane.status === "good"
+        ? "border-t-2 border-t-green-600/70"
+        : "";
+
+  return (
+    <div className={`min-w-0 overflow-hidden rounded-md border border-border ${statusAccent}`}>
+      <div className="flex items-center justify-between border-b border-border bg-surface px-4 py-2 text-sm text-muted">
+        <span className="font-medium text-body">{pane.label}</span>
+        <div className="flex items-center gap-3">
+          {pane.status && <span className="font-medium">{demoStatusLabel[pane.status]}</span>}
+          {dirty && (
+            <button
+              type="button"
+              onClick={reset}
+              className="rounded border border-border px-2 py-0.5 text-xs font-medium text-body transition-colors duration-150 hover:bg-fg hover:text-fg-invert"
+            >
+              ↺ Reset
+            </button>
+          )}
+        </div>
+      </div>
+      <label className="flex items-center gap-1.5 border-t border-border bg-surface/60 px-3 py-1 text-[11px] font-semibold uppercase tracking-wide text-muted">
+        <span aria-hidden="true" className="h-1.5 w-1.5 rounded-full bg-accent" />
+        HTML
+      </label>
+      <textarea
+        spellCheck={false}
+        value={htmlSource}
+        onChange={(event) => {
+          setDirty(true);
+          setHtmlSource(event.target.value);
+        }}
+        rows={Math.min(8, Math.max(2, htmlSource.split("\n").length))}
+        className={editorClass}
+      />
+      <label className="flex items-center gap-1.5 border-t border-border bg-surface/60 px-3 py-1 text-[11px] font-semibold uppercase tracking-wide text-muted">
+        <span aria-hidden="true" className="h-1.5 w-1.5 rounded-full bg-accent" />
+        CSS
+      </label>
+      <textarea
+        spellCheck={false}
+        value={cssSource}
+        onChange={(event) => {
+          setDirty(true);
+          setCssSource(event.target.value);
+        }}
+        rows={Math.min(10, Math.max(2, cssSource.split("\n").length))}
+        className={editorClass}
+      />
+      {pane.tailwind && (
+        <pre className="overflow-x-auto border-x border-t border-border bg-bg p-3 text-sm">
+          <code className="font-mono text-muted">
+            <span className="mr-2 text-[10px] font-semibold uppercase tracking-wide text-muted">
+              Tailwind
+            </span>
+            {pane.tailwind}
+          </code>
+        </pre>
+      )}
+      <div className="flex items-center gap-1.5 border-t border-border bg-surface/60 px-3 py-1 text-[11px] font-semibold uppercase tracking-wide text-muted">
+        <span aria-hidden="true" className="h-1.5 w-1.5 rounded-full bg-green-600" />
+        Live preview
+      </div>
+      <iframe
+        title={pane.label}
+        srcDoc={srcDoc}
+        sandbox=""
+        style={{ height: 220 }}
+        className="block w-full bg-bg"
+      />
+    </div>
+  );
+}
+
+function EditableDemoBlock({ panes, toggle, caption }: Extract<DocSection, { kind: "demo" }>) {
+  const [on, setOn] = useState(toggle?.defaultOn ?? true);
+  const gridClass =
+    panes.length >= 3 ? "sm:grid-cols-2 lg:grid-cols-3" : panes.length === 2 ? "sm:grid-cols-2" : "";
+
+  return (
+    <figure className="mt-8">
+      {toggle && (
+        <button
+          type="button"
+          onClick={() => setOn((current) => !current)}
+          aria-pressed={on}
+          className="mb-3 inline-flex items-center gap-2 rounded-md border border-border px-3 py-1.5 text-sm font-medium text-body transition-colors duration-150 hover:bg-fg hover:text-fg-invert"
+        >
+          <span aria-hidden="true">{on ? "☑" : "☐"}</span>
+          {toggle.label}
+        </button>
+      )}
+      <div className={`grid gap-6 ${gridClass}`}>
+        {panes.map((pane, paneIndex) =>
+          pane.editable ? (
+            <EditablePane key={paneIndex} pane={pane} on={on} />
+          ) : (
+            <div
+              key={paneIndex}
+              className={`min-w-0 overflow-hidden rounded-md border border-border ${pane.status === "bad" ? "border-t-2 border-t-red-500/70" : pane.status === "good" ? "border-t-2 border-t-green-600/70" : ""}`}
+            >
+              <div className="flex items-center justify-between border-b border-border bg-surface px-4 py-2 text-sm text-muted">
+                <span className="font-medium text-body">{pane.label}</span>
+                {pane.status && <span className="font-medium">{demoStatusLabel[pane.status]}</span>}
+              </div>
+              {pane.code && (
+                <pre className="overflow-x-auto border-b border-border bg-bg p-3 text-sm">
+                  <code className="font-mono">{pane.code}</code>
+                </pre>
+              )}
+              {pane.tailwind && (
+                <pre className="overflow-x-auto border-b border-border bg-bg p-3 text-sm">
+                  <code className="font-mono text-muted">
+                    <span className="mr-2 text-[10px] font-semibold uppercase tracking-wide text-muted">
+                      Tailwind
+                    </span>
+                    {pane.tailwind}
+                  </code>
+                </pre>
+              )}
+              <iframe
+                key={String(on)}
+                title={pane.label}
+                srcDoc={pane.html(on)}
+                sandbox=""
+                style={{ height: 220 }}
+                className="block w-full bg-bg"
+              />
+            </div>
+          ),
+        )}
+      </div>
+      {caption && <figcaption className="mt-2 text-base text-muted">{renderInline(caption)}</figcaption>}
     </figure>
   );
 }
@@ -176,7 +452,7 @@ function CaniuseEmbed({ feature, title, caption, variant = "embed" }: Extract<Do
           rel="noreferrer"
           className="flex items-center justify-between gap-4 rounded-b-md border border-border bg-bg px-4 py-4 no-underline transition-colors duration-150 hover:bg-surface"
         >
-          <span className="text-sm text-body">
+          <span className="text-base text-body">
             View live browser support data for{" "}
             <span className="font-mono font-medium text-fg">{title ?? feature}</span>{" "}
             on caniuse.com
@@ -195,8 +471,8 @@ function CaniuseEmbed({ feature, title, caption, variant = "embed" }: Extract<Do
         />
       )}
       {caption && (
-        <figcaption className="mt-2 text-sm text-muted">
-          {caption}
+        <figcaption className="mt-2 text-base text-muted">
+          {renderInline(caption)}
         </figcaption>
       )}
     </figure>
@@ -233,7 +509,7 @@ function MindMap({ root, branches, caption }: Extract<DocSection, { kind: "mindm
       </div>
       {caption && (
         <figcaption className="mt-6 text-center text-sm text-muted">
-          {caption}
+          {renderInline(caption)}
         </figcaption>
       )}
     </figure>
@@ -261,18 +537,24 @@ export default function DocContent({ sections }: { sections: DocSection[] }) {
             const className =
               level === 2
                 ? index === 0
-                  ? "text-3xl"
-                  : "mt-20 border-t border-border pt-10 text-3xl"
-                : "mt-10 text-xl";
+                  ? "group text-3xl"
+                  : "group mt-20 border-t border-border pt-10 text-3xl"
+                : "group mt-10 text-xl";
             const headingContent = numbered ? (
               <span className="flex items-center gap-4">
                 <span className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-accent font-mono text-base font-semibold text-accent">
                   {numbered[1]}
                 </span>
-                <span>{numbered[2]}</span>
+                <span>
+                  {numbered[2]}
+                  <HeadingAnchor id={id} />
+                </span>
               </span>
             ) : (
-              section.text
+              <>
+                {section.text}
+                <HeadingAnchor id={id} />
+              </>
             );
             return level === 2 ? (
               <h2 key={index} id={id} className={className}>
@@ -291,19 +573,19 @@ export default function DocContent({ sections }: { sections: DocSection[] }) {
                 key={index}
                 className="mt-8 max-w-prose text-body"
               >
-                {section.text}
+                {renderInline(section.text)}
               </p>
             );
 
           case "ascii":
             return (
               <figure key={index} className="mt-6">
-                <pre className="overflow-x-auto rounded-md border border-border bg-surface/60 p-4 font-mono text-xs leading-relaxed text-body">
+                <pre className="overflow-x-auto rounded-md border border-border bg-surface/60 p-4 font-mono text-sm leading-relaxed text-body">
                   {section.art}
                 </pre>
                 {section.caption && (
-                  <figcaption className="mt-2 text-sm text-muted">
-                    {section.caption}
+                  <figcaption className="mt-2 text-base text-muted">
+                    {renderInline(section.caption)}
                   </figcaption>
                 )}
               </figure>
@@ -313,7 +595,11 @@ export default function DocContent({ sections }: { sections: DocSection[] }) {
             return <CodeBlock key={index} {...section} />;
 
           case "demo":
-            return <DemoBlock key={index} {...section} />;
+            return section.panes.some((pane) => pane.editable) ? (
+              <EditableDemoBlock key={index} {...section} />
+            ) : (
+              <DemoBlock key={index} {...section} />
+            );
 
           case "mindmap":
             return <MindMap key={index} {...section} />;
@@ -325,16 +611,16 @@ export default function DocContent({ sections }: { sections: DocSection[] }) {
             return (
               <div
                 key={index}
-                className="mt-8 flex gap-3 rounded-md border-l-4 border-fg bg-surface/60 py-3 pl-4 pr-4"
+                className={`mt-8 flex gap-3 rounded-md border-l-4 bg-surface/60 py-3 pl-4 pr-4 ${calloutAccent[section.variant]}`}
               >
-                <span className="mt-0.5 h-4 w-4 shrink-0 text-fg">
+                <span className={`mt-0.5 h-4 w-4 shrink-0 ${section.variant === "tip" ? "text-green-600" : section.variant === "warning" ? "text-amber-600" : "text-accent"}`}>
                   {calloutIcon[section.variant]}
                 </span>
-                <p className="text-sm text-body">
+                <p className="text-base text-body">
                   <span className="font-semibold text-fg">
                     {calloutLabel[section.variant]}:
                   </span>{" "}
-                  {section.text}
+                  {renderInline(section.text)}
                 </p>
               </div>
             );
@@ -347,10 +633,10 @@ export default function DocContent({ sections }: { sections: DocSection[] }) {
                     key={itemIndex}
                     className="flex gap-3 text-body"
                   >
-                    <span className="font-mono text-sm text-muted">
+                    <span className="font-mono text-base text-muted">
                       {itemIndex + 1}.
                     </span>
-                    <span>{item}</span>
+                    <span>{renderInline(item)}</span>
                   </li>
                 ))}
               </ol>
@@ -362,7 +648,7 @@ export default function DocContent({ sections }: { sections: DocSection[] }) {
                     className="flex gap-3 text-body"
                   >
                     <span className="text-muted">&bull;</span>
-                    <span>{item}</span>
+                    <span>{renderInline(item)}</span>
                   </li>
                 ))}
               </ul>
@@ -374,13 +660,13 @@ export default function DocContent({ sections }: { sections: DocSection[] }) {
                 {[section.before, section.after].map((side, sideIndex) => (
                   <div
                     key={sideIndex}
-                    className="min-w-0 rounded-md border border-border p-4"
+                    className={`min-w-0 rounded-md border border-border p-4 border-t-2 ${sideIndex === 0 ? "border-t-red-500/70" : "border-t-green-600/70"}`}
                   >
-                    <p className="mb-3 text-sm font-semibold text-fg">
+                    <p className="mb-3 text-base font-semibold text-fg">
                       {side.label}
                     </p>
                     {side.code && (
-                      <pre className="mb-3 overflow-x-auto rounded-md border border-border bg-surface/60 p-3 text-xs">
+                      <pre className="mb-3 overflow-x-auto rounded-md border border-border bg-surface/60 p-3 text-sm">
                         <code className="font-mono">{side.code}</code>
                       </pre>
                     )}
@@ -388,10 +674,10 @@ export default function DocContent({ sections }: { sections: DocSection[] }) {
                       {side.points.map((point, pointIndex) => (
                         <li
                           key={pointIndex}
-                          className="flex gap-2 text-sm text-body"
+                          className="flex gap-2 text-base text-body"
                         >
                           <span className="text-muted">&bull;</span>
-                          <span>{point}</span>
+                          <span>{renderInline(point)}</span>
                         </li>
                       ))}
                     </ul>
@@ -403,9 +689,9 @@ export default function DocContent({ sections }: { sections: DocSection[] }) {
           case "table":
             return (
               <div key={index} className="mt-8 overflow-x-auto rounded-md border border-border">
-                <table className="w-full border-collapse text-sm">
+                <table className="w-full border-collapse text-base">
                   <thead>
-                    <tr className="border-b border-border">
+                    <tr className="border-b border-border bg-surface">
                       {section.headers.map((header, headerIndex) => (
                         <th
                           key={headerIndex}
@@ -420,14 +706,14 @@ export default function DocContent({ sections }: { sections: DocSection[] }) {
                     {section.rows.map((row, rowIndex) => (
                       <tr
                         key={rowIndex}
-                        className="border-b border-border last:border-b-0"
+                        className="border-b border-border last:border-b-0 hover:bg-surface/60"
                       >
                         {row.map((cell, cellIndex) => (
                           <td
                             key={cellIndex}
                             className="px-4 py-2 text-body"
                           >
-                            {cell}
+                            {renderInline(cell)}
                           </td>
                         ))}
                       </tr>

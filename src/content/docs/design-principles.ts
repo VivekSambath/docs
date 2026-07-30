@@ -1,599 +1,5 @@
 import type { DocArticle } from "../articles";
 
-// --- Live demo HTML generators ----------------------------------------------
-// Each demo is a self-contained mini "page" rendered inside a sandboxed
-// iframe (srcDoc) — no scripts, just real CSS (including real :hover states
-// where a rule is about interaction, e.g. the accent and motion rules).
-
-function page(body: string, extraStyle = "") {
-  return `<!doctype html>
-<html>
-<head>
-<style>
-  * { box-sizing: border-box; }
-  html, body { margin: 0; }
-  body {
-    font: 13px/1.5 system-ui, sans-serif;
-    color: #171717;
-    background: #fff;
-    padding: 18px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    min-height: calc(100% - 36px);
-    text-align: center;
-  }
-  ${extraStyle}
-</style>
-</head>
-<body>${body}</body>
-</html>`;
-}
-
-// Rule 1 — pure black/white vs near-black/near-white
-const pureBlackHtml = () =>
-  page(
-    `<div style="width:100%;max-width:200px;background:#000;color:#fff;padding:22px;border-radius:8px;font-weight:600;">#000 on #fff</div>`,
-  );
-const nearBlackHtml = () =>
-  page(
-    `<div style="width:100%;max-width:200px;background:#0a0a0a;color:#fafafa;padding:22px;border-radius:8px;font-weight:600;">#0a0a0a on #fafafa</div>`,
-    "body { background: #fafafa; }",
-  );
-const blackWhiteSeamHtml = () =>
-  page(
-    `<div style="display:flex;flex-direction:column;gap:8px;width:100%;max-width:220px;">
-      <div style="display:flex;height:40px;border-radius:6px;overflow:hidden;">
-        <div style="flex:1;background:#000;"></div>
-        <div style="flex:1;background:#0a0a0a;"></div>
-      </div>
-      <p style="margin:0;font-size:10px;color:#737373;">#000 (left) vs #0a0a0a (right)</p>
-      <div style="display:flex;height:40px;border-radius:6px;overflow:hidden;border:1px solid #e5e5e5;">
-        <div style="flex:1;background:#fff;"></div>
-        <div style="flex:1;background:#fafafa;"></div>
-      </div>
-      <p style="margin:0;font-size:10px;color:#737373;">#fff (left) vs #fafafa (right)</p>
-    </div>`,
-    "body { align-items: flex-start; justify-content: flex-start; text-align: left; }",
-  );
-
-// Rule 2 — saturate your neutrals
-const flatNeutralsHtml = () =>
-  page(
-    `<div style="display:flex;flex-direction:column;align-items:center;gap:10px;">
-      <div style="display:flex;gap:10px;">
-        <div style="width:48px;height:48px;border-radius:6px;background:#404040;"></div>
-        <div style="width:48px;height:48px;border-radius:6px;background:#737373;"></div>
-        <div style="width:48px;height:48px;border-radius:6px;background:#a3a3a3;"></div>
-      </div>
-      <p style="margin:0;font-size:11px;color:#a3a3a3;">Flat grays</p>
-    </div>`,
-  );
-const saturatedNeutralsHtml = () =>
-  page(
-    `<div style="display:flex;flex-direction:column;align-items:center;gap:10px;">
-      <div style="display:flex;gap:10px;">
-        <div style="width:48px;height:48px;border-radius:6px;background:#3a4150;"></div>
-        <div style="width:48px;height:48px;border-radius:6px;background:#6b7385;"></div>
-        <div style="width:48px;height:48px;border-radius:6px;background:#a1a8b8;"></div>
-      </div>
-      <p style="margin:0;font-size:11px;color:#6b7385;">Grays + a touch of #0060df</p>
-    </div>`,
-  );
-
-// Rule 3 — high contrast for important elements
-const flatHierarchyHtml = () =>
-  page(
-    `<div style="text-align:left;">
-      <p style="margin:0 0 6px;font-size:16px;font-weight:600;color:#737373;">Article title</p>
-      <p style="margin:0;font-size:16px;font-weight:600;color:#737373;">Supporting subtitle text</p>
-    </div>`,
-  );
-const contrastHierarchyHtml = () =>
-  page(
-    `<div style="text-align:left;">
-      <p style="margin:0 0 6px;font-size:16px;font-weight:600;color:#0a0a0a;">Article title</p>
-      <p style="margin:0;font-size:16px;font-weight:600;color:#a3a3a3;">Supporting subtitle text</p>
-    </div>`,
-  );
-
-// Rule 4 — everything in your design should be deliberate
-const chaosCardHtml = () =>
-  page(
-    `<div style="width:200px;background:#f3f3f3;border-radius:9px;padding:11px;text-align:left;">
-      <p style="margin:0 0 3px;font-size:15px;font-weight:700;color:#333;">Update available</p>
-      <p style="margin:0 0 14px;font-size:12px;color:#8a8a8a;padding-left:2px;">New version ready</p>
-      <button style="font:600 11px system-ui, sans-serif;padding:7px 10px;border-radius:4px;border:none;background:#555;color:#fff;margin-left:3px;">Install</button>
-    </div>`,
-  );
-const deliberateCardHtml = () =>
-  page(
-    `<div style="width:200px;background:#f5f5f5;border-radius:8px;padding:16px;text-align:left;">
-      <p style="margin:0 0 4px;font-size:15px;font-weight:600;color:#0a0a0a;">Update available</p>
-      <p style="margin:0 0 16px;font-size:12px;color:#737373;">New version ready</p>
-      <button style="font:600 12px system-ui, sans-serif;padding:8px 16px;border-radius:6px;border:none;background:#0a0a0a;color:#fafafa;">Install</button>
-    </div>`,
-  );
-
-// Rule 5 — optical vs mathematical alignment
-const mathCenterHtml = () =>
-  page(
-    `<div style="position:relative;width:64px;height:64px;border-radius:50%;background:#0a0a0a;display:flex;align-items:center;justify-content:center;">
-      <div style="position:absolute;left:50%;top:0;bottom:0;width:1px;background:rgba(255,255,255,0.35);"></div>
-      <div style="width:0;height:0;border-top:10px solid transparent;border-bottom:10px solid transparent;border-left:16px solid #fafafa;"></div>
-    </div>`,
-  );
-const opticalCenterHtml = () =>
-  page(
-    `<div style="position:relative;width:64px;height:64px;border-radius:50%;background:#0a0a0a;display:flex;align-items:center;justify-content:center;">
-      <div style="position:absolute;left:50%;top:0;bottom:0;width:1px;background:rgba(255,255,255,0.35);"></div>
-      <div style="width:0;height:0;border-top:10px solid transparent;border-bottom:10px solid transparent;border-left:16px solid #fafafa;transform:translateX(2px);"></div>
-    </div>`,
-  );
-
-// Rule 6 — tighten large type, loosen small type
-const trackingHtml = () =>
-  page(
-    `<div style="display:flex;flex-direction:column;gap:16px;width:100%;">
-      <div>
-        <p style="margin:0 0 4px;font-size:10px;font-weight:600;color:#737373;">Heading, letter-spacing: 0</p>
-        <p style="margin:0;font-size:28px;font-weight:600;letter-spacing:0;">Design that lasts</p>
-      </div>
-      <div>
-        <p style="margin:0 0 4px;font-size:10px;font-weight:600;color:#16a34a;">Heading, letter-spacing: -0.02em</p>
-        <p style="margin:0;font-size:28px;font-weight:600;letter-spacing:-0.02em;">Design that lasts</p>
-      </div>
-      <div>
-        <p style="margin:0 0 4px;font-size:10px;font-weight:600;color:#737373;">Label, letter-spacing: 0</p>
-        <p style="margin:0;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:0;">Section label</p>
-      </div>
-      <div>
-        <p style="margin:0 0 4px;font-size:10px;font-weight:600;color:#16a34a;">Label, letter-spacing: 0.05em</p>
-        <p style="margin:0;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:0.05em;">Section label</p>
-      </div>
-    </div>`,
-    "body { align-items: flex-start; justify-content: flex-start; text-align: left; }",
-  );
-
-// Rule 7 — container borders should contrast with both container and background
-const borderBlendHtml = () =>
-  page(
-    `<div style="width:180px;padding:20px;text-align:left;">
-      <div style="background:#262626;border:1px solid #1f1f1f;border-radius:8px;padding:16px;font-size:12px;color:#a3a3a3;">Card content</div>
-    </div>`,
-    "body { background: #171717; }",
-  );
-const borderPopHtml = () =>
-  page(
-    `<div style="width:180px;padding:20px;text-align:left;">
-      <div style="background:#262626;border:1px solid #404040;border-radius:8px;padding:16px;font-size:12px;color:#d4d4d4;">Card content</div>
-    </div>`,
-    "body { background: #171717; }",
-  );
-
-// Rule 8 — everything should be aligned with something else
-const misalignedHtml = () =>
-  page(
-    `<div style="width:200px;">
-      <p style="margin:0 0 8px 4px;font-size:15px;font-weight:600;color:#0a0a0a;">Heading</p>
-      <p style="margin:0 0 12px 14px;font-size:12px;color:#737373;">Supporting line of text.</p>
-      <button style="margin-left:8px;font:600 12px system-ui, sans-serif;padding:8px 14px;border-radius:6px;border:none;background:#0a0a0a;color:#fafafa;">Continue</button>
-    </div>`,
-    "body { align-items: flex-start; justify-content: flex-start; text-align: left; }",
-  );
-const alignedHtml = () =>
-  page(
-    `<div style="width:200px;border-left:1px dashed #d4d4d4;">
-      <p style="margin:0 0 8px;padding-left:10px;font-size:15px;font-weight:600;color:#0a0a0a;">Heading</p>
-      <p style="margin:0 0 12px;padding-left:10px;font-size:12px;color:#737373;">Supporting line of text.</p>
-      <button style="margin-left:10px;font:600 12px system-ui, sans-serif;padding:8px 14px;border-radius:6px;border:none;background:#0a0a0a;color:#fafafa;">Continue</button>
-    </div>`,
-    "body { align-items: flex-start; justify-content: flex-start; text-align: left; }",
-  );
-
-// Rule 9 — distinct brightness values in a palette
-const sameBrightnessHtml = () =>
-  page(
-    `<div style="display:flex;gap:10px;">
-      <div style="width:48px;height:48px;border-radius:6px;background:hsl(0,55%,50%);"></div>
-      <div style="width:48px;height:48px;border-radius:6px;background:hsl(140,55%,42%);"></div>
-      <div style="width:48px;height:48px;border-radius:6px;background:hsl(220,65%,52%);"></div>
-    </div>`,
-  );
-const distinctBrightnessHtml = () =>
-  page(
-    `<div style="display:flex;gap:10px;align-items:flex-end;">
-      <div style="width:48px;height:48px;border-radius:6px;background:hsl(0,60%,72%);"></div>
-      <div style="width:48px;height:48px;border-radius:6px;background:hsl(140,45%,45%);"></div>
-      <div style="width:48px;height:48px;border-radius:6px;background:hsl(220,70%,28%);"></div>
-    </div>`,
-  );
-
-// Rule 10 — warm or cool neutrals, not both
-const mixedTempHtml = () =>
-  page(
-    `<div style="display:flex;flex-direction:column;align-items:center;gap:10px;">
-      <div style="display:flex;gap:10px;">
-        <div style="width:48px;height:48px;border-radius:6px;background:#8a7d6e;"></div>
-        <div style="width:48px;height:48px;border-radius:6px;background:#6e7a8a;"></div>
-        <div style="width:48px;height:48px;border-radius:6px;background:#8a7d6e;"></div>
-      </div>
-      <p style="margin:0;font-size:11px;color:#a3a3a3;">Warm + cool, mixed</p>
-    </div>`,
-  );
-const warmOnlyHtml = () =>
-  page(
-    `<div style="display:flex;flex-direction:column;align-items:center;gap:10px;">
-      <div style="display:flex;gap:10px;">
-        <div style="width:48px;height:48px;border-radius:6px;background:#3d3833;"></div>
-        <div style="width:48px;height:48px;border-radius:6px;background:#6b6259;"></div>
-        <div style="width:48px;height:48px;border-radius:6px;background:#a39c92;"></div>
-      </div>
-      <p style="margin:0;font-size:11px;color:#a3a3a3;">Warm grays only</p>
-    </div>`,
-  );
-
-// Rule 11 — the spacing scale (measurements are mathematically related)
-const SPACING_SCALE = [4, 8, 12, 16, 24, 32];
-const spacingScaleHtml = () =>
-  page(
-    `<div style="display:flex;align-items:flex-end;gap:14px;">
-      ${SPACING_SCALE.map(
-        (v) =>
-          `<div style="display:flex;flex-direction:column;align-items:center;gap:6px;">
-            <div style="width:20px;height:${v * 3}px;background:#171717;border-radius:3px;"></div>
-            <span style="font-size:10px;color:#737373;">${v}</span>
-          </div>`,
-      ).join("")}
-    </div>`,
-  );
-
-// Rule 12 — order elements by visual weight
-const randomWeightHtml = () =>
-  page(
-    `<div style="display:flex;flex-direction:column;align-items:flex-start;gap:10px;">
-      <span style="font-size:11px;color:#a3a3a3;">Byline text</span>
-      <button style="font:600 13px system-ui, sans-serif;padding:10px 20px;border-radius:6px;border:none;background:#0a0a0a;color:#fafafa;">Get started</button>
-      <span style="font-size:13px;font-weight:600;color:#0a0a0a;">Section label</span>
-    </div>`,
-    "body { align-items: flex-start; justify-content: flex-start; text-align: left; }",
-  );
-const triangleWeightHtml = () =>
-  page(
-    `<div style="display:flex;flex-direction:column;align-items:flex-start;gap:10px;">
-      <button style="font:600 13px system-ui, sans-serif;padding:10px 20px;border-radius:6px;border:none;background:#0a0a0a;color:#fafafa;">Get started</button>
-      <span style="font-size:13px;font-weight:600;color:#0a0a0a;">Section label</span>
-      <span style="font-size:11px;color:#a3a3a3;">Byline text</span>
-    </div>`,
-    "body { align-items: flex-start; justify-content: flex-start; text-align: left; }",
-  );
-
-// Rule 13 — a 12-column grid
-const gridHtml = () =>
-  page(
-    `<div style="width:100%;max-width:260px;display:flex;flex-direction:column;gap:10px;">
-      <div style="display:grid;grid-template-columns:repeat(12,1fr);gap:3px;">
-        ${Array.from({ length: 12 })
-          .map(
-            (_, i) =>
-              `<div style="height:26px;background:${i % 4 === 0 ? "#0a0a0a" : "#d4d4d4"};border-radius:2px;"></div>`,
-          )
-          .join("")}
-      </div>
-      <p style="margin:0;font-size:10px;color:#a3a3a3;">12 columns splits evenly into 1, 2, 3, 4, 6, or 12</p>
-    </div>`,
-    "body { align-items: flex-start; justify-content: flex-start; text-align: left; }",
-  );
-
-// Rule 14 — spacing should go between points of high contrast
-const spacingBoxEdgeHtml = () =>
-  page(
-    `<div style="display:flex;flex-direction:column;align-items:center;gap:8px;">
-      <div style="display:flex;align-items:center;gap:16px;">
-        <div style="width:32px;height:32px;display:flex;align-items:center;justify-content:center;background:rgba(10,10,10,0.04);">
-          <div style="width:14px;height:14px;border-radius:3px;background:#0a0a0a;"></div>
-        </div>
-        <span style="font-size:13px;color:#171717;">Label text</span>
-      </div>
-      <p style="margin:0;font-size:10px;color:#a3a3a3;">gap: 16px — measured to the icon's oversized box</p>
-    </div>`,
-  );
-const spacingContrastEdgeHtml = () =>
-  page(
-    `<div style="display:flex;flex-direction:column;align-items:center;gap:8px;">
-      <div style="display:flex;align-items:center;gap:16px;">
-        <div style="width:14px;height:14px;border-radius:3px;background:#0a0a0a;"></div>
-        <span style="font-size:13px;color:#171717;">Label text</span>
-      </div>
-      <p style="margin:0;font-size:10px;color:#a3a3a3;">gap: 16px — measured from the visible edge of the glyph</p>
-    </div>`,
-  );
-
-// Rule 15 — closer elements should be lighter
-const flatLayersHtml = () =>
-  page(
-    `<div style="position:relative;width:140px;height:100px;">
-      <div style="position:absolute;left:0;top:20px;width:100px;height:60px;border-radius:8px;background:#262626;"></div>
-      <div style="position:absolute;left:20px;top:10px;width:100px;height:60px;border-radius:8px;background:#262626;"></div>
-      <div style="position:absolute;left:40px;top:0;width:100px;height:60px;border-radius:8px;background:#262626;"></div>
-    </div>`,
-    "body { background: #171717; }",
-  );
-const lightLayersHtml = () =>
-  page(
-    `<div style="position:relative;width:140px;height:100px;">
-      <div style="position:absolute;left:0;top:20px;width:100px;height:60px;border-radius:8px;background:#262626;"></div>
-      <div style="position:absolute;left:20px;top:10px;width:100px;height:60px;border-radius:8px;background:#3a3a3a;"></div>
-      <div style="position:absolute;left:40px;top:0;width:100px;height:60px;border-radius:8px;background:#525252;"></div>
-    </div>`,
-    "body { background: #171717; }",
-  );
-
-// Rule 16 — shadow blur values double their distance values
-const shadowMismatchHtml = () =>
-  page(
-    `<div style="width:140px;height:80px;background:#fff;border-radius:8px;box-shadow:0 6px 6px rgba(0,0,0,0.25);"></div>`,
-    "body { background: #f2f2f2; }",
-  );
-const shadowRatioHtml = () =>
-  page(
-    `<div style="width:140px;height:80px;background:#fff;border-radius:8px;box-shadow:0 6px 12px rgba(0,0,0,0.18);"></div>`,
-    "body { background: #f2f2f2; }",
-  );
-
-// Rule 17 — put simple on complex, or complex on simple
-const STRIPES =
-  "repeating-linear-gradient(45deg,#e5e5e5,#e5e5e5 6px,#f5f5f5 6px,#f5f5f5 12px)";
-const complexOnComplexHtml = () =>
-  page(
-    `<div style="width:140px;height:100px;border-radius:8px;background:${STRIPES};display:flex;align-items:center;justify-content:center;">
-      <div style="position:relative;width:44px;height:44px;">
-        <div style="position:absolute;left:0;top:0;width:26px;height:26px;border-radius:50%;background:#0a0a0a;"></div>
-        <div style="position:absolute;right:0;bottom:0;width:22px;height:22px;border-radius:4px;background:#525252;transform:rotate(15deg);"></div>
-        <div style="position:absolute;left:14px;bottom:4px;width:18px;height:18px;border-radius:3px;border:2px solid #0a0a0a;"></div>
-      </div>
-    </div>`,
-  );
-const simpleOnComplexHtml = () =>
-  page(
-    `<div style="width:140px;height:100px;border-radius:8px;background:${STRIPES};display:flex;align-items:center;justify-content:center;">
-      <div style="width:36px;height:36px;border-radius:50%;background:#0a0a0a;"></div>
-    </div>`,
-  );
-const complexOnSimpleHtml = () =>
-  page(
-    `<div style="width:140px;height:100px;border-radius:8px;background:#f5f5f5;display:flex;align-items:center;justify-content:center;">
-      <div style="position:relative;width:44px;height:44px;">
-        <div style="position:absolute;left:0;top:0;width:26px;height:26px;border-radius:50%;background:#0a0a0a;"></div>
-        <div style="position:absolute;right:0;bottom:0;width:22px;height:22px;border-radius:4px;background:#525252;transform:rotate(15deg);"></div>
-        <div style="position:absolute;left:14px;bottom:4px;width:18px;height:18px;border-radius:3px;border:2px solid #0a0a0a;"></div>
-      </div>
-    </div>`,
-  );
-
-// Rule 18 — keep container colours within brightness limits
-const brightnessTooMuchHtml = () =>
-  page(
-    `<div style="width:160px;padding:16px;">
-      <div style="background:#d0d0d0;border-radius:8px;padding:16px;font-size:11px;color:#525252;">~18% brightness jump</div>
-    </div>`,
-    "body { background: #fff; }",
-  );
-const brightnessOkHtml = () =>
-  page(
-    `<div style="width:160px;padding:16px;">
-      <div style="background:#f5f5f5;border-radius:8px;padding:16px;font-size:11px;color:#525252;">~4% brightness jump</div>
-    </div>`,
-    "body { background: #fff; }",
-  );
-
-// Rule 19 — outer padding should be the same or more than inner padding
-const paddingWrongHtml = () =>
-  page(
-    `<div style="width:180px;background:#f5f5f5;border-radius:8px;padding:8px;display:flex;flex-direction:column;gap:16px;text-align:left;">
-      <div style="font-size:12px;color:#171717;">First item</div>
-      <div style="font-size:12px;color:#171717;">Second item</div>
-    </div>`,
-    "body { align-items: flex-start; justify-content: flex-start; }",
-  );
-const paddingRightHtml = () =>
-  page(
-    `<div style="width:180px;background:#f5f5f5;border-radius:8px;padding:20px;display:flex;flex-direction:column;gap:12px;text-align:left;">
-      <div style="font-size:12px;color:#171717;">First item</div>
-      <div style="font-size:12px;color:#171717;">Second item</div>
-    </div>`,
-    "body { align-items: flex-start; justify-content: flex-start; }",
-  );
-
-// Rule 20 — body text size
-const SAMPLE_TEXT =
-  "Reading small text asks the eye to lean in and work harder than it should.";
-const smallTextHtml = () =>
-  page(
-    `<p style="max-width:200px;font-size:13px;line-height:1.4;margin:0;text-align:left;">${SAMPLE_TEXT}</p>`,
-  );
-const comfortableTextHtml = () =>
-  page(
-    `<p style="max-width:220px;font-size:17px;line-height:1.55;margin:0;text-align:left;">${SAMPLE_TEXT}</p>`,
-  );
-
-// Rule 21 — line length / measure
-const LONG_TEXT =
-  "Long lines make the eye lose its place on the way back to the start, which is why unrestrained paragraphs feel more tiring to read the wider the browser window gets, even though nothing about the words themselves has changed.";
-const lineLengthHtml = () =>
-  page(
-    `<div style="display:flex;flex-direction:column;gap:16px;width:100%;">
-      <div>
-        <p style="margin:0 0 4px;font-size:10px;font-weight:600;color:#dc2626;">No max-width</p>
-        <p style="margin:0;font-size:13px;line-height:1.5;">${LONG_TEXT}</p>
-      </div>
-      <div>
-        <p style="margin:0 0 4px;font-size:10px;font-weight:600;color:#16a34a;">max-width: 65ch</p>
-        <p style="margin:0;max-width:65ch;font-size:13px;line-height:1.5;">${LONG_TEXT}</p>
-      </div>
-    </div>`,
-    "body { align-items: flex-start; justify-content: flex-start; text-align: left; }",
-  );
-
-// Rule 22 — button padding ratio
-const squareButtonHtml = () =>
-  page(
-    `<button style="font:600 13px system-ui, sans-serif;padding:12px 14px;border-radius:6px;border:1px solid #0a0a0a;background:#0a0a0a;color:#fafafa;">Continue</button>`,
-  );
-const ratioButtonHtml = () =>
-  page(
-    `<button style="font:600 13px system-ui, sans-serif;padding:12px 24px;border-radius:6px;border:1px solid #0a0a0a;background:#0a0a0a;color:#fafafa;">Continue</button>`,
-  );
-
-// Rule 23 — two typefaces at most
-const threeTypefacesHtml = () =>
-  page(
-    `<div style="display:flex;flex-direction:column;gap:8px;text-align:left;">
-      <p style="margin:0;font:700 18px Georgia, serif;color:#0a0a0a;">Heading in serif</p>
-      <p style="margin:0;font:13px 'Courier New', monospace;color:#171717;">Body copy in monospace</p>
-      <p style="margin:0;font:600 11px system-ui, sans-serif;letter-spacing:0.05em;text-transform:uppercase;color:#737373;">Label in sans</p>
-    </div>`,
-    "body { align-items: flex-start; justify-content: flex-start; }",
-  );
-const twoTypefacesHtml = () =>
-  page(
-    `<div style="display:flex;flex-direction:column;gap:8px;text-align:left;">
-      <p style="margin:0;font:700 18px system-ui, sans-serif;color:#0a0a0a;">Heading in sans</p>
-      <p style="margin:0;font:13px system-ui, sans-serif;color:#171717;">Body copy in the same sans</p>
-      <p style="margin:0;font:12px 'Courier New', monospace;color:#737373;">A code label in monospace</p>
-    </div>`,
-    "body { align-items: flex-start; justify-content: flex-start; }",
-  );
-
-// Rule 24 — nested corner radii
-const radiiMismatchHtml = () =>
-  page(
-    `<div style="width:160px;background:#eee;border-radius:16px;padding:16px;">
-      <div style="background:#fff;border:1px solid #ddd;border-radius:16px;height:60px;"></div>
-    </div>`,
-  );
-const radiiProportionalHtml = () =>
-  page(
-    `<div style="width:160px;background:#eee;border-radius:16px;padding:16px;">
-      <div style="background:#fff;border:1px solid #ddd;border-radius:8px;height:60px;"></div>
-    </div>`,
-  );
-
-// Rule 25 — don't put two hard divides next to each other
-const doubleDivideHtml = () =>
-  page(
-    `<div style="width:180px;text-align:left;">
-      <div style="border-bottom:1px solid #d4d4d4;padding-bottom:10px;margin-bottom:2px;font-size:12px;color:#171717;">Section one</div>
-      <div style="border-top:1px solid #d4d4d4;padding-top:10px;font-size:12px;color:#171717;">Section two</div>
-    </div>`,
-    "body { align-items: flex-start; justify-content: flex-start; }",
-  );
-const singleDivideHtml = () =>
-  page(
-    `<div style="width:180px;text-align:left;">
-      <div style="padding-bottom:12px;font-size:12px;color:#171717;">Section one</div>
-      <div style="border-top:1px solid #d4d4d4;padding-top:12px;font-size:12px;color:#171717;">Section two</div>
-    </div>`,
-    "body { align-items: flex-start; justify-content: flex-start; }",
-  );
-
-// Rule 26 — no shadows in dark interfaces
-const darkShadowHtml = () =>
-  page(
-    `<div style="width:140px;height:80px;background:#262626;border-radius:8px;box-shadow:0 8px 16px rgba(0,0,0,0.4);"></div>`,
-    "body { background: #171717; }",
-  );
-const darkBorderHtml = () =>
-  page(
-    `<div style="width:140px;height:80px;background:#262626;border:1px solid #404040;border-radius:8px;"></div>`,
-    "body { background: #171717; }",
-  );
-
-// Rule 27 — don't mix depth techniques (border vs. shadow on the same surface)
-const borderShadowHtml = () =>
-  page(
-    `<div style="width:100%;max-width:180px;background:#fff;border:1px solid #ddd;box-shadow:0 12px 24px rgba(0,0,0,0.18);border-radius:8px;padding:20px;font-size:12px;color:#525252;">Border + shadow</div>`,
-  );
-const borderOnlyHtml = () =>
-  page(
-    `<div style="width:100%;max-width:180px;background:#fff;border:1px solid #ddd;border-radius:8px;padding:20px;font-size:12px;color:#525252;">Border only</div>`,
-  );
-
-// Rule 28 — lower the contrast of icons paired with text
-const iconHeavyHtml = () =>
-  page(
-    `<div style="display:flex;align-items:center;gap:8px;">
-      <svg width="16" height="16" viewBox="0 0 16 16" fill="#0a0a0a"><circle cx="8" cy="8" r="7"/></svg>
-      <span style="font-size:13px;color:#0a0a0a;">Notifications</span>
-    </div>`,
-  );
-const iconMutedHtml = () =>
-  page(
-    `<div style="display:flex;align-items:center;gap:8px;">
-      <svg width="16" height="16" viewBox="0 0 16 16" fill="#a3a3a3"><circle cx="8" cy="8" r="7"/></svg>
-      <span style="font-size:13px;color:#0a0a0a;">Notifications</span>
-    </div>`,
-  );
-
-// Rule 29 (beyond the source) — one accent color, used deliberately (real CSS :hover, no JS needed)
-const noAccentLinkHtml = () =>
-  page(
-    `<p style="max-width:220px;font-size:14px;line-height:1.5;color:#171717;">Read the <a href="#" style="color:inherit;text-decoration:underline;">full guide</a> for details.</p>`,
-    "body { align-items: flex-start; justify-content: flex-start; text-align: left; }",
-  );
-const accentUsageHtml = () =>
-  page(
-    `<div style="display:flex;flex-direction:column;gap:14px;width:100%;max-width:220px;">
-      <p style="margin:0;font-size:14px;line-height:1.5;color:#171717;">Read the <a href="#" style="color:#0060df;text-decoration:underline;">full guide</a> for details.</p>
-      <div style="border-left:3px solid #0060df;padding:4px 0 4px 10px;font-size:13px;font-weight:600;color:#0060df;">Current page</div>
-    </div>`,
-    "body { align-items: flex-start; justify-content: flex-start; text-align: left; }",
-  );
-const accentHoverHtml = () =>
-  page(
-    `<a href="#" class="accent-link">Hover or tab to me</a>`,
-    `.accent-link {
-      font: 600 14px system-ui, sans-serif;
-      color: #0060df;
-      text-decoration: underline;
-      transition: color 160ms ease-out;
-    }
-    .accent-link:hover, .accent-link:focus-visible { color: #0345a5; }`,
-  );
-
-// Rule 30 (beyond the source) — motion duration/easing (real CSS :hover, no JS needed)
-function motionHtml(duration: string, easing: string) {
-  return page(
-    `<div class="track"><div class="box">Hover</div></div>`,
-    `.track {
-      width: 160px;
-      height: 48px;
-      border: 1px dashed #d4d4d4;
-      border-radius: 8px;
-      position: relative;
-      overflow: hidden;
-    }
-    .box {
-      position: absolute;
-      left: 6px;
-      top: 6px;
-      width: 60px;
-      height: 36px;
-      border-radius: 6px;
-      background: #0a0a0a;
-      color: #fafafa;
-      font-size: 10px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      transition: transform ${duration} ${easing};
-    }
-    .track:hover .box { transform: translateX(90px); }`,
-  );
-}
-const slowMotionHtml = () => motionHtml("600ms", "ease-in-out");
-const fastMotionHtml = () => motionHtml("160ms", "ease-out");
-
 export const designPrinciples: DocArticle = {
   kind: "doc",
   slug: "design-principles",
@@ -609,7 +15,7 @@ export const designPrinciples: DocArticle = {
   sections: [
     {
       kind: "paragraph",
-      text: "Anthony Hobday's 28 \"safe to follow\" rules for visual design, plus two of this site's own — each one demonstrated with a live, mostly ✕ Bad / ✓ Good CSS pane below.",
+      text: "Anthony Hobday's 28 \"safe to follow\" rules for visual design, plus two of this site's own — each demonstrated with a live, editable ✕ Bad / ✓ Good CSS pane.",
     },
     {
       kind: "mindmap",
@@ -682,18 +88,61 @@ export const designPrinciples: DocArticle = {
         {
           label: "Pure black/white",
           status: "bad",
-          code: "background: #000;\ncolor: #fff;",
+          editable: true,
           tailwind: '<div class="bg-black text-white">',
-          html: pureBlackHtml,
+          htmlSource: `<div class="swatch">#000 on #fff</div>`,
+          cssSource: `.swatch {
+  width: 100%;
+  max-width: 200px;
+  background: #000;
+  color: #fff;
+  padding: 22px;
+  border-radius: 8px;
+  font-weight: 600;
+}`,
         },
         {
           label: "Near-black/near-white",
           status: "good",
-          code: "background: #0a0a0a;\ncolor: #fafafa;",
+          editable: true,
           tailwind: '<div class="bg-neutral-950 text-neutral-50">',
-          html: nearBlackHtml,
+          htmlSource: `<div class="swatch">#0a0a0a on #fafafa</div>`,
+          cssSource: `body { background: #fafafa; }
+.swatch {
+  width: 100%;
+  max-width: 200px;
+  background: #0a0a0a;
+  color: #fafafa;
+  padding: 22px;
+  border-radius: 8px;
+  font-weight: 600;
+}`,
         },
-        { label: "Seam test", html: blackWhiteSeamHtml },
+        {
+          label: "Seam test",
+          editable: true,
+          htmlSource: `<div class="stack">
+  <div class="row">
+    <div class="a"></div>
+    <div class="b"></div>
+  </div>
+  <p class="caption">#000 (left) vs #0a0a0a (right)</p>
+  <div class="row bordered">
+    <div class="c"></div>
+    <div class="d"></div>
+  </div>
+  <p class="caption">#fff (left) vs #fafafa (right)</p>
+</div>`,
+          cssSource: `body { align-items: flex-start; justify-content: flex-start; text-align: left; }
+.stack { display: flex; flex-direction: column; gap: 8px; width: 100%; max-width: 220px; }
+.row { display: flex; height: 40px; border-radius: 6px; overflow: hidden; }
+.row.bordered { border: 1px solid #e5e5e5; }
+.a { flex: 1; background: #000; }
+.b { flex: 1; background: #0a0a0a; }
+.c { flex: 1; background: #fff; }
+.d { flex: 1; background: #fafafa; }
+.caption { margin: 0; font-size: 10px; color: #737373; }`,
+        },
       ],
       height: 200,
       caption: "Alone the first two panes look identical; edge to edge in the third, the seam appears — enough difference to soften pure black without losing contrast.",
@@ -701,7 +150,7 @@ export const designPrinciples: DocArticle = {
     {
       kind: "callout",
       variant: "tip",
-      text: "This seam trick generalizes to any two colors that are close enough to look identical when viewed apart: put them edge to edge with no gap. The eye is far better at catching a boundary between near-identical colors than at comparing two isolated swatches.",
+      text: "This seam trick generalizes to any two close colors: put them edge to edge with no gap and the eye catches a boundary it would miss in isolated swatches.",
     },
 
     { kind: "heading", text: "2. Saturate your neutrals" },
@@ -715,14 +164,42 @@ export const designPrinciples: DocArticle = {
         {
           label: "Flat grays",
           status: "bad",
-          code: "background: #404040;\nbackground: #737373;\nbackground: #a3a3a3;",
-          html: flatNeutralsHtml,
+          editable: true,
+          htmlSource: `<div class="stack">
+  <div class="row">
+    <div class="sw sw-1"></div>
+    <div class="sw sw-2"></div>
+    <div class="sw sw-3"></div>
+  </div>
+  <p class="caption">Flat grays</p>
+</div>`,
+          cssSource: `.stack { display: flex; flex-direction: column; align-items: center; gap: 10px; }
+.row { display: flex; gap: 10px; }
+.sw { width: 48px; height: 48px; border-radius: 6px; }
+.sw-1 { background: #404040; }
+.sw-2 { background: #737373; }
+.sw-3 { background: #a3a3a3; }
+.caption { margin: 0; font-size: 11px; color: #a3a3a3; }`,
         },
         {
           label: "Saturated toward the accent",
           status: "good",
-          code: "background: #3a4150;\nbackground: #6b7385;\nbackground: #a1a8b8;",
-          html: saturatedNeutralsHtml,
+          editable: true,
+          htmlSource: `<div class="stack">
+  <div class="row">
+    <div class="sw sw-1"></div>
+    <div class="sw sw-2"></div>
+    <div class="sw sw-3"></div>
+  </div>
+  <p class="caption">Grays + a touch of #0060df</p>
+</div>`,
+          cssSource: `.stack { display: flex; flex-direction: column; align-items: center; gap: 10px; }
+.row { display: flex; gap: 10px; }
+.sw { width: 48px; height: 48px; border-radius: 6px; }
+.sw-1 { background: #3a4150; }
+.sw-2 { background: #6b7385; }
+.sw-3 { background: #a1a8b8; }
+.caption { margin: 0; font-size: 11px; color: #6b7385; }`,
         },
       ],
       height: 130,
@@ -740,16 +217,28 @@ export const designPrinciples: DocArticle = {
         {
           label: "Same color, same size",
           status: "bad",
-          code: "h2, p { color: #737373; }",
+          editable: true,
           tailwind: '<h2 class="text-neutral-500">\n<p class="text-neutral-500">',
-          html: flatHierarchyHtml,
+          htmlSource: `<div class="wrap">
+  <p class="title">Article title</p>
+  <p class="subtitle">Supporting subtitle text</p>
+</div>`,
+          cssSource: `body { align-items: flex-start; justify-content: flex-start; text-align: left; }
+.title, .subtitle { margin: 0 0 6px; font-size: 16px; font-weight: 600; color: #737373; }
+.subtitle { margin-bottom: 0; }`,
         },
         {
           label: "Near-black + muted gray",
           status: "good",
-          code: "h2 { color: #0a0a0a; }\np { color: #a3a3a3; }",
+          editable: true,
           tailwind: '<h2 class="text-neutral-950">\n<p class="text-neutral-400">',
-          html: contrastHierarchyHtml,
+          htmlSource: `<div class="wrap">
+  <p class="title">Article title</p>
+  <p class="subtitle">Supporting subtitle text</p>
+</div>`,
+          cssSource: `body { align-items: flex-start; justify-content: flex-start; text-align: left; }
+.title { margin: 0 0 6px; font-size: 16px; font-weight: 600; color: #0a0a0a; }
+.subtitle { margin: 0; font-size: 16px; font-weight: 600; color: #a3a3a3; }`,
         },
       ],
       height: 110,
@@ -767,14 +256,30 @@ export const designPrinciples: DocArticle = {
         {
           label: "Leftover defaults",
           status: "bad",
-          code: "padding: 11px;\ncolor: #333, #8a8a8a;\nborder-radius: 9px;",
-          html: chaosCardHtml,
+          editable: true,
+          htmlSource: `<div class="card">
+  <p class="title">Update available</p>
+  <p class="subtitle">New version ready</p>
+  <button class="btn">Install</button>
+</div>`,
+          cssSource: `.card { width: 200px; background: #f3f3f3; border-radius: 9px; padding: 11px; text-align: left; }
+.title { margin: 0 0 3px; font-size: 15px; font-weight: 700; color: #333; }
+.subtitle { margin: 0 0 14px; font-size: 12px; color: #8a8a8a; padding-left: 2px; }
+.btn { font: 600 11px system-ui, sans-serif; padding: 7px 10px; border-radius: 4px; border: none; background: #555; color: #fff; margin-left: 3px; }`,
         },
         {
           label: "Deliberate values",
           status: "good",
-          code: "padding: 16px;\ncolor: #0a0a0a, #737373;\nborder-radius: 8px;",
-          html: deliberateCardHtml,
+          editable: true,
+          htmlSource: `<div class="card">
+  <p class="title">Update available</p>
+  <p class="subtitle">New version ready</p>
+  <button class="btn">Install</button>
+</div>`,
+          cssSource: `.card { width: 200px; background: #f5f5f5; border-radius: 8px; padding: 16px; text-align: left; }
+.title { margin: 0 0 4px; font-size: 15px; font-weight: 600; color: #0a0a0a; }
+.subtitle { margin: 0 0 16px; font-size: 12px; color: #737373; }
+.btn { font: 600 12px system-ui, sans-serif; padding: 8px 16px; border-radius: 6px; border: none; background: #0a0a0a; color: #fafafa; }`,
         },
       ],
       height: 160,
@@ -792,16 +297,59 @@ export const designPrinciples: DocArticle = {
         {
           label: "Mathematically centered",
           status: "bad",
-          code: ".icon {\n  display: flex;\n  align-items: center;\n  justify-content: center;\n}",
+          editable: true,
           tailwind: '<div class="flex items-center justify-center">',
-          html: mathCenterHtml,
+          htmlSource: `<div class="icon">
+  <div class="guide"></div>
+  <div class="triangle"></div>
+</div>`,
+          cssSource: `.icon {
+  position: relative;
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  background: #0a0a0a;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.guide { position: absolute; left: 50%; top: 0; bottom: 0; width: 1px; background: rgba(255,255,255,0.35); }
+.triangle {
+  width: 0;
+  height: 0;
+  border-top: 10px solid transparent;
+  border-bottom: 10px solid transparent;
+  border-left: 16px solid #fafafa;
+}`,
         },
         {
           label: "Nudged 2px right",
           status: "good",
-          code: ".icon-glyph {\n  transform: translateX(2px);\n}",
+          editable: true,
           tailwind: '<div class="translate-x-0.5">',
-          html: opticalCenterHtml,
+          htmlSource: `<div class="icon">
+  <div class="guide"></div>
+  <div class="triangle"></div>
+</div>`,
+          cssSource: `.icon {
+  position: relative;
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  background: #0a0a0a;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.guide { position: absolute; left: 50%; top: 0; bottom: 0; width: 1px; background: rgba(255,255,255,0.35); }
+.triangle {
+  width: 0;
+  height: 0;
+  border-top: 10px solid transparent;
+  border-bottom: 10px solid transparent;
+  border-left: 16px solid #fafafa;
+  transform: translateX(2px);
+}`,
         },
       ],
       height: 130,
@@ -818,9 +366,37 @@ export const designPrinciples: DocArticle = {
       panes: [
         {
           label: "Letter-spacing by size",
-          code: "h1 { letter-spacing: -0.02em; }\nlabel { letter-spacing: 0.05em; }",
+          editable: true,
           tailwind: '<h1 class="tracking-tight">\n<span class="tracking-wider">',
-          html: trackingHtml,
+          htmlSource: `<div class="stack">
+  <div>
+    <p class="note note-flat">Heading, letter-spacing: 0</p>
+    <p class="heading heading-flat">Design that lasts</p>
+  </div>
+  <div>
+    <p class="note note-good">Heading, letter-spacing: -0.02em</p>
+    <p class="heading heading-tight">Design that lasts</p>
+  </div>
+  <div>
+    <p class="note note-flat">Label, letter-spacing: 0</p>
+    <p class="label label-flat">Section label</p>
+  </div>
+  <div>
+    <p class="note note-good">Label, letter-spacing: 0.05em</p>
+    <p class="label label-wide">Section label</p>
+  </div>
+</div>`,
+          cssSource: `body { align-items: flex-start; justify-content: flex-start; text-align: left; }
+.stack { display: flex; flex-direction: column; gap: 16px; width: 100%; }
+.note { margin: 0 0 4px; font-size: 10px; font-weight: 600; }
+.note-flat { color: #737373; }
+.note-good { color: #16a34a; }
+.heading { margin: 0; font-size: 28px; font-weight: 600; }
+.heading-flat { letter-spacing: 0; }
+.heading-tight { letter-spacing: -0.02em; }
+.label { margin: 0; font-size: 11px; font-weight: 600; text-transform: uppercase; }
+.label-flat { letter-spacing: 0; }
+.label-wide { letter-spacing: 0.05em; }`,
         },
       ],
       height: 290,
@@ -838,14 +414,24 @@ export const designPrinciples: DocArticle = {
         {
           label: "Border between the two",
           status: "bad",
-          code: "background: #171717;\n.card { background: #262626; border-color: #1f1f1f; }",
-          html: borderBlendHtml,
+          editable: true,
+          htmlSource: `<div class="wrap">
+  <div class="card">Card content</div>
+</div>`,
+          cssSource: `body { background: #171717; }
+.wrap { width: 180px; padding: 20px; text-align: left; }
+.card { background: #262626; border: 1px solid #1f1f1f; border-radius: 8px; padding: 16px; font-size: 12px; color: #a3a3a3; }`,
         },
         {
           label: "Border lighter than both",
           status: "good",
-          code: "background: #171717;\n.card { background: #262626; border-color: #404040; }",
-          html: borderPopHtml,
+          editable: true,
+          htmlSource: `<div class="wrap">
+  <div class="card">Card content</div>
+</div>`,
+          cssSource: `body { background: #171717; }
+.wrap { width: 180px; padding: 20px; text-align: left; }
+.card { background: #262626; border: 1px solid #404040; border-radius: 8px; padding: 16px; font-size: 12px; color: #d4d4d4; }`,
         },
       ],
       height: 150,
@@ -863,14 +449,32 @@ export const designPrinciples: DocArticle = {
         {
           label: "Each on its own offset",
           status: "bad",
-          code: "h2 { margin-left: 4px; }\np { margin-left: 14px; }\nbutton { margin-left: 8px; }",
-          html: misalignedHtml,
+          editable: true,
+          htmlSource: `<div class="wrap">
+  <p class="heading">Heading</p>
+  <p class="sub">Supporting line of text.</p>
+  <button class="btn">Continue</button>
+</div>`,
+          cssSource: `body { align-items: flex-start; justify-content: flex-start; text-align: left; }
+.wrap { width: 200px; }
+.heading { margin: 0 0 8px 4px; font-size: 15px; font-weight: 600; color: #0a0a0a; }
+.sub { margin: 0 0 12px 14px; font-size: 12px; color: #737373; }
+.btn { margin-left: 8px; font: 600 12px system-ui, sans-serif; padding: 8px 14px; border-radius: 6px; border: none; background: #0a0a0a; color: #fafafa; }`,
         },
         {
           label: "Shared left edge",
           status: "good",
-          code: "h2, p, button { margin-left: 10px; }",
-          html: alignedHtml,
+          editable: true,
+          htmlSource: `<div class="wrap">
+  <p class="heading">Heading</p>
+  <p class="sub">Supporting line of text.</p>
+  <button class="btn">Continue</button>
+</div>`,
+          cssSource: `body { align-items: flex-start; justify-content: flex-start; text-align: left; }
+.wrap { width: 200px; border-left: 1px dashed #d4d4d4; }
+.heading { margin: 0 0 8px; padding-left: 10px; font-size: 15px; font-weight: 600; color: #0a0a0a; }
+.sub { margin: 0 0 12px; padding-left: 10px; font-size: 12px; color: #737373; }
+.btn { margin-left: 10px; font: 600 12px system-ui, sans-serif; padding: 8px 14px; border-radius: 6px; border: none; background: #0a0a0a; color: #fafafa; }`,
         },
       ],
       height: 170,
@@ -888,14 +492,32 @@ export const designPrinciples: DocArticle = {
         {
           label: "Same brightness, different hue",
           status: "bad",
-          code: "hsl(0, 55%, 50%)\nhsl(140, 55%, 42%)\nhsl(220, 65%, 52%)",
-          html: sameBrightnessHtml,
+          editable: true,
+          htmlSource: `<div class="row">
+  <div class="sw sw-1"></div>
+  <div class="sw sw-2"></div>
+  <div class="sw sw-3"></div>
+</div>`,
+          cssSource: `.row { display: flex; gap: 10px; }
+.sw { width: 48px; height: 48px; border-radius: 6px; }
+.sw-1 { background: hsl(0, 55%, 50%); }
+.sw-2 { background: hsl(140, 55%, 42%); }
+.sw-3 { background: hsl(220, 65%, 52%); }`,
         },
         {
           label: "Distinct brightness values",
           status: "good",
-          code: "hsl(0, 60%, 72%)\nhsl(140, 45%, 45%)\nhsl(220, 70%, 28%)",
-          html: distinctBrightnessHtml,
+          editable: true,
+          htmlSource: `<div class="row">
+  <div class="sw sw-1"></div>
+  <div class="sw sw-2"></div>
+  <div class="sw sw-3"></div>
+</div>`,
+          cssSource: `.row { display: flex; gap: 10px; align-items: flex-end; }
+.sw { width: 48px; height: 48px; border-radius: 6px; }
+.sw-1 { background: hsl(0, 60%, 72%); }
+.sw-2 { background: hsl(140, 45%, 45%); }
+.sw-3 { background: hsl(220, 70%, 28%); }`,
         },
       ],
       height: 110,
@@ -913,14 +535,42 @@ export const designPrinciples: DocArticle = {
         {
           label: "Warm and cool mixed",
           status: "bad",
-          code: "background: #8a7d6e; /* warm */\nbackground: #6e7a8a; /* cool */",
-          html: mixedTempHtml,
+          editable: true,
+          htmlSource: `<div class="stack">
+  <div class="row">
+    <div class="sw sw-1"></div>
+    <div class="sw sw-2"></div>
+    <div class="sw sw-3"></div>
+  </div>
+  <p class="caption">Warm + cool, mixed</p>
+</div>`,
+          cssSource: `.stack { display: flex; flex-direction: column; align-items: center; gap: 10px; }
+.row { display: flex; gap: 10px; }
+.sw { width: 48px; height: 48px; border-radius: 6px; }
+.sw-1 { background: #8a7d6e; /* warm */ }
+.sw-2 { background: #6e7a8a; /* cool */ }
+.sw-3 { background: #8a7d6e; /* warm */ }
+.caption { margin: 0; font-size: 11px; color: #a3a3a3; }`,
         },
         {
           label: "Warm only",
           status: "good",
-          code: "background: #3d3833;\nbackground: #6b6259;\nbackground: #a39c92;",
-          html: warmOnlyHtml,
+          editable: true,
+          htmlSource: `<div class="stack">
+  <div class="row">
+    <div class="sw sw-1"></div>
+    <div class="sw sw-2"></div>
+    <div class="sw sw-3"></div>
+  </div>
+  <p class="caption">Warm grays only</p>
+</div>`,
+          cssSource: `.stack { display: flex; flex-direction: column; align-items: center; gap: 10px; }
+.row { display: flex; gap: 10px; }
+.sw { width: 48px; height: 48px; border-radius: 6px; }
+.sw-1 { background: #3d3833; }
+.sw-2 { background: #6b6259; }
+.sw-3 { background: #a39c92; }
+.caption { margin: 0; font-size: 11px; color: #a3a3a3; }`,
         },
       ],
       height: 130,
@@ -937,9 +587,26 @@ export const designPrinciples: DocArticle = {
       panes: [
         {
           label: "The spacing scale",
-          code: "4px  8px  12px  16px  24px  32px",
+          editable: true,
           tailwind: "gap-1  gap-2  gap-3  gap-4  gap-6  gap-8",
-          html: spacingScaleHtml,
+          htmlSource: `<div class="row">
+  <div class="step"><div class="bar bar-4"></div><span class="num">4</span></div>
+  <div class="step"><div class="bar bar-8"></div><span class="num">8</span></div>
+  <div class="step"><div class="bar bar-12"></div><span class="num">12</span></div>
+  <div class="step"><div class="bar bar-16"></div><span class="num">16</span></div>
+  <div class="step"><div class="bar bar-24"></div><span class="num">24</span></div>
+  <div class="step"><div class="bar bar-32"></div><span class="num">32</span></div>
+</div>`,
+          cssSource: `.row { display: flex; align-items: flex-end; gap: 14px; }
+.step { display: flex; flex-direction: column; align-items: center; gap: 6px; }
+.bar { width: 20px; background: #171717; border-radius: 3px; }
+.bar-4 { height: 12px; }   /* 4  * 3 */
+.bar-8 { height: 24px; }   /* 8  * 3 */
+.bar-12 { height: 36px; }  /* 12 * 3 */
+.bar-16 { height: 48px; }  /* 16 * 3 */
+.bar-24 { height: 72px; }  /* 24 * 3 */
+.bar-32 { height: 96px; }  /* 32 * 3 */
+.num { font-size: 10px; color: #737373; }`,
         },
       ],
       height: 180,
@@ -957,12 +624,32 @@ export const designPrinciples: DocArticle = {
         {
           label: "Random order",
           status: "bad",
-          html: randomWeightHtml,
+          editable: true,
+          htmlSource: `<div class="stack">
+  <span class="byline">Byline text</span>
+  <button class="btn">Get started</button>
+  <span class="label">Section label</span>
+</div>`,
+          cssSource: `body { align-items: flex-start; justify-content: flex-start; text-align: left; }
+.stack { display: flex; flex-direction: column; align-items: flex-start; gap: 10px; }
+.byline { font-size: 11px; color: #a3a3a3; }
+.btn { font: 600 13px system-ui, sans-serif; padding: 10px 20px; border-radius: 6px; border: none; background: #0a0a0a; color: #fafafa; }
+.label { font-size: 13px; font-weight: 600; color: #0a0a0a; }`,
         },
         {
           label: "Heaviest to lightest",
           status: "good",
-          html: triangleWeightHtml,
+          editable: true,
+          htmlSource: `<div class="stack">
+  <button class="btn">Get started</button>
+  <span class="label">Section label</span>
+  <span class="byline">Byline text</span>
+</div>`,
+          cssSource: `body { align-items: flex-start; justify-content: flex-start; text-align: left; }
+.stack { display: flex; flex-direction: column; align-items: flex-start; gap: 10px; }
+.btn { font: 600 13px system-ui, sans-serif; padding: 10px 20px; border-radius: 6px; border: none; background: #0a0a0a; color: #fafafa; }
+.label { font-size: 13px; font-weight: 600; color: #0a0a0a; }
+.byline { font-size: 11px; color: #a3a3a3; }`,
         },
       ],
       height: 170,
@@ -972,14 +659,37 @@ export const designPrinciples: DocArticle = {
     { kind: "heading", text: "13. If you use a horizontal grid, use 12 columns" },
     {
       kind: "paragraph",
-      text: "A 12-column grid divides cleanly into halves, thirds, and quarters, which covers most layout needs without switching grid systems partway through a page.",
+      text: "A 12-column grid divides cleanly into halves, thirds, and quarters — enough for most layouts without switching systems mid-page.",
     },
     {
       kind: "demo",
       panes: [
         {
           label: "12 columns",
-          html: gridHtml,
+          editable: true,
+          htmlSource: `<div class="wrap">
+  <div class="grid">
+    <div class="col hl"></div>
+    <div class="col"></div>
+    <div class="col"></div>
+    <div class="col"></div>
+    <div class="col hl"></div>
+    <div class="col"></div>
+    <div class="col"></div>
+    <div class="col"></div>
+    <div class="col hl"></div>
+    <div class="col"></div>
+    <div class="col"></div>
+    <div class="col"></div>
+  </div>
+  <p class="caption">12 columns splits evenly into 1, 2, 3, 4, 6, or 12</p>
+</div>`,
+          cssSource: `body { align-items: flex-start; justify-content: flex-start; text-align: left; }
+.wrap { width: 100%; max-width: 260px; display: flex; flex-direction: column; gap: 10px; }
+.grid { display: grid; grid-template-columns: repeat(12, 1fr); gap: 3px; }
+.col { height: 26px; background: #d4d4d4; border-radius: 2px; }
+.col.hl { background: #0a0a0a; }
+.caption { margin: 0; font-size: 10px; color: #a3a3a3; }`,
         },
       ],
       height: 130,
@@ -994,7 +704,7 @@ export const designPrinciples: DocArticle = {
     { kind: "heading", text: "14. Spacing should go between points of high contrast" },
     {
       kind: "paragraph",
-      text: "The eye finds an edge by contrast, not by DOM box — measure spacing from a glyph's visible edge, or gaps will look uneven even with matching numbers.",
+      text: "The eye finds an edge by contrast, not by DOM box — measure spacing from a glyph's visible edge, not its invisible padding.",
     },
     {
       kind: "demo",
@@ -1002,12 +712,39 @@ export const designPrinciples: DocArticle = {
         {
           label: "Measured to the icon's box",
           status: "bad",
-          html: spacingBoxEdgeHtml,
+          editable: true,
+          htmlSource: `<div class="stack">
+  <div class="row">
+    <div class="icon-box">
+      <div class="glyph"></div>
+    </div>
+    <span class="label">Label text</span>
+  </div>
+  <p class="caption">gap: 16px — measured to the icon's oversized box</p>
+</div>`,
+          cssSource: `.stack { display: flex; flex-direction: column; align-items: center; gap: 8px; }
+.row { display: flex; align-items: center; gap: 16px; }
+.icon-box { width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; background: rgba(10,10,10,0.04); }
+.glyph { width: 14px; height: 14px; border-radius: 3px; background: #0a0a0a; }
+.label { font-size: 13px; color: #171717; }
+.caption { margin: 0; font-size: 10px; color: #a3a3a3; }`,
         },
         {
           label: "Measured to the visible edge",
           status: "good",
-          html: spacingContrastEdgeHtml,
+          editable: true,
+          htmlSource: `<div class="stack">
+  <div class="row">
+    <div class="glyph"></div>
+    <span class="label">Label text</span>
+  </div>
+  <p class="caption">gap: 16px — measured from the visible edge of the glyph</p>
+</div>`,
+          cssSource: `.stack { display: flex; flex-direction: column; align-items: center; gap: 8px; }
+.row { display: flex; align-items: center; gap: 16px; }
+.glyph { width: 14px; height: 14px; border-radius: 3px; background: #0a0a0a; }
+.label { font-size: 13px; color: #171717; }
+.caption { margin: 0; font-size: 10px; color: #a3a3a3; }`,
         },
       ],
       height: 140,
@@ -1017,7 +754,7 @@ export const designPrinciples: DocArticle = {
     { kind: "heading", text: "15. Closer elements should be lighter" },
     {
       kind: "paragraph",
-      text: "As surfaces get closer to the viewer, they should get lighter — a cue that works in both light and dark interfaces and reinforces depth without needing a shadow.",
+      text: "As surfaces get closer to the viewer, they should get lighter — a depth cue that works without a shadow.",
     },
     {
       kind: "demo",
@@ -1025,12 +762,34 @@ export const designPrinciples: DocArticle = {
         {
           label: "Flat, no depth cue",
           status: "bad",
-          html: flatLayersHtml,
+          editable: true,
+          htmlSource: `<div class="stack">
+  <div class="card card-1"></div>
+  <div class="card card-2"></div>
+  <div class="card card-3"></div>
+</div>`,
+          cssSource: `body { background: #171717; }
+.stack { position: relative; width: 140px; height: 100px; }
+.card { position: absolute; width: 100px; height: 60px; border-radius: 8px; background: #262626; }
+.card-1 { left: 0; top: 20px; }
+.card-2 { left: 20px; top: 10px; }
+.card-3 { left: 40px; top: 0; }`,
         },
         {
           label: "Lighter toward the front",
           status: "good",
-          html: lightLayersHtml,
+          editable: true,
+          htmlSource: `<div class="stack">
+  <div class="card card-1"></div>
+  <div class="card card-2"></div>
+  <div class="card card-3"></div>
+</div>`,
+          cssSource: `body { background: #171717; }
+.stack { position: relative; width: 140px; height: 100px; }
+.card { position: absolute; width: 100px; height: 60px; border-radius: 8px; }
+.card-1 { left: 0; top: 20px; background: #262626; }
+.card-2 { left: 20px; top: 10px; background: #3a3a3a; }
+.card-3 { left: 40px; top: 0; background: #525252; }`,
         },
       ],
       height: 150,
@@ -1048,14 +807,18 @@ export const designPrinciples: DocArticle = {
         {
           label: "6px distance, 6px blur",
           status: "bad",
-          code: "box-shadow: 0 6px 6px rgba(0,0,0,0.25);",
-          html: shadowMismatchHtml,
+          editable: true,
+          htmlSource: `<div class="box"></div>`,
+          cssSource: `body { background: #f2f2f2; }
+.box { width: 140px; height: 80px; background: #fff; border-radius: 8px; box-shadow: 0 6px 6px rgba(0,0,0,0.25); }`,
         },
         {
           label: "6px distance, 12px blur",
           status: "good",
-          code: "box-shadow: 0 6px 12px rgba(0,0,0,0.18);",
-          html: shadowRatioHtml,
+          editable: true,
+          htmlSource: `<div class="box"></div>`,
+          cssSource: `body { background: #f2f2f2; }
+.box { width: 140px; height: 80px; background: #fff; border-radius: 8px; box-shadow: 0 6px 12px rgba(0,0,0,0.18); }`,
         },
       ],
       height: 150,
@@ -1073,17 +836,48 @@ export const designPrinciples: DocArticle = {
         {
           label: "Complex mark on complex background",
           status: "bad",
-          html: complexOnComplexHtml,
+          editable: true,
+          htmlSource: `<div class="bg stripes">
+  <div class="mark">
+    <div class="circle"></div>
+    <div class="square"></div>
+    <div class="ring"></div>
+  </div>
+</div>`,
+          cssSource: `.bg { width: 140px; height: 100px; border-radius: 8px; display: flex; align-items: center; justify-content: center; }
+.stripes { background: repeating-linear-gradient(45deg, #e5e5e5, #e5e5e5 6px, #f5f5f5 6px, #f5f5f5 12px); }
+.mark { position: relative; width: 44px; height: 44px; }
+.circle { position: absolute; left: 0; top: 0; width: 26px; height: 26px; border-radius: 50%; background: #0a0a0a; }
+.square { position: absolute; right: 0; bottom: 0; width: 22px; height: 22px; border-radius: 4px; background: #525252; transform: rotate(15deg); }
+.ring { position: absolute; left: 14px; bottom: 4px; width: 18px; height: 18px; border-radius: 3px; border: 2px solid #0a0a0a; }`,
         },
         {
           label: "Simple mark on complex background",
           status: "good",
-          html: simpleOnComplexHtml,
+          editable: true,
+          htmlSource: `<div class="bg stripes">
+  <div class="dot"></div>
+</div>`,
+          cssSource: `.bg { width: 140px; height: 100px; border-radius: 8px; display: flex; align-items: center; justify-content: center; }
+.stripes { background: repeating-linear-gradient(45deg, #e5e5e5, #e5e5e5 6px, #f5f5f5 6px, #f5f5f5 12px); }
+.dot { width: 36px; height: 36px; border-radius: 50%; background: #0a0a0a; }`,
         },
         {
           label: "Complex mark on simple background",
           status: "good",
-          html: complexOnSimpleHtml,
+          editable: true,
+          htmlSource: `<div class="bg">
+  <div class="mark">
+    <div class="circle"></div>
+    <div class="square"></div>
+    <div class="ring"></div>
+  </div>
+</div>`,
+          cssSource: `.bg { width: 140px; height: 100px; border-radius: 8px; background: #f5f5f5; display: flex; align-items: center; justify-content: center; }
+.mark { position: relative; width: 44px; height: 44px; }
+.circle { position: absolute; left: 0; top: 0; width: 26px; height: 26px; border-radius: 50%; background: #0a0a0a; }
+.square { position: absolute; right: 0; bottom: 0; width: 22px; height: 22px; border-radius: 4px; background: #525252; transform: rotate(15deg); }
+.ring { position: absolute; left: 14px; bottom: 4px; width: 18px; height: 18px; border-radius: 3px; border: 2px solid #0a0a0a; }`,
         },
       ],
       height: 150,
@@ -1101,14 +895,24 @@ export const designPrinciples: DocArticle = {
         {
           label: "Too large a jump",
           status: "bad",
-          code: "background: #fff;\n.card { background: #d0d0d0; }",
-          html: brightnessTooMuchHtml,
+          editable: true,
+          htmlSource: `<div class="wrap">
+  <div class="card">~18% brightness jump</div>
+</div>`,
+          cssSource: `body { background: #fff; }
+.wrap { width: 160px; padding: 16px; }
+.card { background: #d0d0d0; border-radius: 8px; padding: 16px; font-size: 11px; color: #525252; }`,
         },
         {
           label: "Within limits",
           status: "good",
-          code: "background: #fff;\n.card { background: #f5f5f5; }",
-          html: brightnessOkHtml,
+          editable: true,
+          htmlSource: `<div class="wrap">
+  <div class="card">~4% brightness jump</div>
+</div>`,
+          cssSource: `body { background: #fff; }
+.wrap { width: 160px; padding: 16px; }
+.card { background: #f5f5f5; border-radius: 8px; padding: 16px; font-size: 11px; color: #525252; }`,
         },
       ],
       height: 130,
@@ -1126,14 +930,26 @@ export const designPrinciples: DocArticle = {
         {
           label: "Outer 8px, inner gap 16px",
           status: "bad",
-          code: ".card { padding: 8px; gap: 16px; }",
-          html: paddingWrongHtml,
+          editable: true,
+          htmlSource: `<div class="card">
+  <div class="item">First item</div>
+  <div class="item">Second item</div>
+</div>`,
+          cssSource: `body { align-items: flex-start; justify-content: flex-start; }
+.card { width: 180px; background: #f5f5f5; border-radius: 8px; padding: 8px; display: flex; flex-direction: column; gap: 16px; text-align: left; }
+.item { font-size: 12px; color: #171717; }`,
         },
         {
           label: "Outer 20px, inner gap 12px",
           status: "good",
-          code: ".card { padding: 20px; gap: 12px; }",
-          html: paddingRightHtml,
+          editable: true,
+          htmlSource: `<div class="card">
+  <div class="item">First item</div>
+  <div class="item">Second item</div>
+</div>`,
+          cssSource: `body { align-items: flex-start; justify-content: flex-start; }
+.card { width: 180px; background: #f5f5f5; border-radius: 8px; padding: 20px; display: flex; flex-direction: column; gap: 12px; text-align: left; }
+.item { font-size: 12px; color: #171717; }`,
         },
       ],
       height: 150,
@@ -1143,7 +959,7 @@ export const designPrinciples: DocArticle = {
     { kind: "heading", text: "20. Keep body text at 16px or above" },
     {
       kind: "paragraph",
-      text: "16px is the default body size for a reason — below it, text asks the reader to lean in, so this site uses 20px with generous line-height.",
+      text: "16px is the default body size for a reason — below it, text asks the reader to lean in.",
     },
     {
       kind: "demo",
@@ -1151,16 +967,18 @@ export const designPrinciples: DocArticle = {
         {
           label: "13px / 1.4",
           status: "bad",
-          code: "font-size: 13px;\nline-height: 1.4;",
+          editable: true,
           tailwind: '<p class="text-[13px] leading-snug">',
-          html: smallTextHtml,
+          htmlSource: `<p class="text">Reading small text asks the eye to lean in and work harder than it should.</p>`,
+          cssSource: `.text { max-width: 200px; font-size: 13px; line-height: 1.4; margin: 0; text-align: left; }`,
         },
         {
           label: "17px / 1.55",
           status: "good",
-          code: "font-size: 17px;\nline-height: 1.55;",
+          editable: true,
           tailwind: '<p class="text-[17px] leading-[1.55]">',
-          html: comfortableTextHtml,
+          htmlSource: `<p class="text">Reading small text asks the eye to lean in and work harder than it should.</p>`,
+          cssSource: `.text { max-width: 220px; font-size: 17px; line-height: 1.55; margin: 0; text-align: left; }`,
         },
       ],
       height: 140,
@@ -1170,16 +988,32 @@ export const designPrinciples: DocArticle = {
     { kind: "heading", text: "21. Use a line length around 70 characters" },
     {
       kind: "paragraph",
-      text: "Lines can run 60–80 characters comfortably, but go far past that and readability suffers — so paragraphs here are capped at a measure.",
+      text: "Lines can run 60-80 characters comfortably; go far past that and readability suffers.",
     },
     {
       kind: "demo",
       panes: [
         {
           label: "Unconstrained vs. measure: 65ch",
-          code: "p { max-width: none; }\np { max-width: 65ch; }",
+          editable: true,
           tailwind: '<p class="max-w-none">\n<p class="max-w-prose"> <!-- max-w-prose = 65ch -->',
-          html: lineLengthHtml,
+          htmlSource: `<div class="stack">
+  <div>
+    <p class="note note-bad">No max-width</p>
+    <p class="body body-unconstrained">Long lines make the eye lose its place on the way back to the start, which is why unrestrained paragraphs feel more tiring to read the wider the browser window gets, even though nothing about the words themselves has changed.</p>
+  </div>
+  <div>
+    <p class="note note-good">max-width: 65ch</p>
+    <p class="body body-measured">Long lines make the eye lose its place on the way back to the start, which is why unrestrained paragraphs feel more tiring to read the wider the browser window gets, even though nothing about the words themselves has changed.</p>
+  </div>
+</div>`,
+          cssSource: `body { align-items: flex-start; justify-content: flex-start; text-align: left; }
+.stack { display: flex; flex-direction: column; gap: 16px; width: 100%; }
+.note { margin: 0 0 4px; font-size: 10px; font-weight: 600; }
+.note-bad { color: #dc2626; }
+.note-good { color: #16a34a; }
+.body { margin: 0; font-size: 13px; line-height: 1.5; }
+.body-measured { max-width: 65ch; }`,
         },
       ],
       height: 210,
@@ -1203,16 +1037,18 @@ export const designPrinciples: DocArticle = {
         {
           label: "padding: 12px 14px",
           status: "bad",
-          code: "padding: 12px 14px;",
+          editable: true,
           tailwind: '<button class="px-3.5 py-3">',
-          html: squareButtonHtml,
+          htmlSource: `<button class="btn">Continue</button>`,
+          cssSource: `.btn { font: 600 13px system-ui, sans-serif; padding: 12px 14px; border-radius: 6px; border: 1px solid #0a0a0a; background: #0a0a0a; color: #fafafa; }`,
         },
         {
           label: "padding: 12px 24px",
           status: "good",
-          code: "padding: 12px 24px;",
+          editable: true,
           tailwind: '<button class="px-6 py-3">',
-          html: ratioButtonHtml,
+          htmlSource: `<button class="btn">Continue</button>`,
+          cssSource: `.btn { font: 600 13px system-ui, sans-serif; padding: 12px 24px; border-radius: 6px; border: 1px solid #0a0a0a; background: #0a0a0a; color: #fafafa; }`,
         },
       ],
       height: 110,
@@ -1222,7 +1058,7 @@ export const designPrinciples: DocArticle = {
     { kind: "heading", text: "23. Use two typefaces at most" },
     {
       kind: "paragraph",
-      text: "A second typeface can reinforce a design's idea — a monospace for code, a serif for warmth — but a third rarely adds anything but noise.",
+      text: "A second typeface can reinforce a design's idea; a third rarely adds anything but noise.",
     },
     {
       kind: "demo",
@@ -1230,12 +1066,32 @@ export const designPrinciples: DocArticle = {
         {
           label: "Three typefaces",
           status: "bad",
-          html: threeTypefacesHtml,
+          editable: true,
+          htmlSource: `<div class="stack">
+  <p class="heading">Heading in serif</p>
+  <p class="body">Body copy in monospace</p>
+  <p class="label">Label in sans</p>
+</div>`,
+          cssSource: `body { align-items: flex-start; justify-content: flex-start; }
+.stack { display: flex; flex-direction: column; gap: 8px; text-align: left; }
+.heading { margin: 0; font: 700 18px Georgia, serif; color: #0a0a0a; }
+.body { margin: 0; font: 13px 'Courier New', monospace; color: #171717; }
+.label { margin: 0; font: 600 11px system-ui, sans-serif; letter-spacing: 0.05em; text-transform: uppercase; color: #737373; }`,
         },
         {
           label: "Two typefaces",
           status: "good",
-          html: twoTypefacesHtml,
+          editable: true,
+          htmlSource: `<div class="stack">
+  <p class="heading">Heading in sans</p>
+  <p class="body">Body copy in the same sans</p>
+  <p class="label">A code label in monospace</p>
+</div>`,
+          cssSource: `body { align-items: flex-start; justify-content: flex-start; }
+.stack { display: flex; flex-direction: column; gap: 8px; text-align: left; }
+.heading { margin: 0; font: 700 18px system-ui, sans-serif; color: #0a0a0a; }
+.body { margin: 0; font: 13px system-ui, sans-serif; color: #171717; }
+.label { margin: 0; font: 12px 'Courier New', monospace; color: #737373; }`,
         },
       ],
       height: 150,
@@ -1245,7 +1101,7 @@ export const designPrinciples: DocArticle = {
     { kind: "heading", text: "24. Nest corners properly" },
     {
       kind: "paragraph",
-      text: "An inner element's corner radius should equal the outer radius minus the padding between them, or the two curves visually fight each other instead of feeling concentric.",
+      text: "An inner corner radius should equal the outer radius minus the padding between them, or the two curves fight instead of feeling concentric.",
     },
     {
       kind: "demo",
@@ -1253,16 +1109,24 @@ export const designPrinciples: DocArticle = {
         {
           label: "Outer 16px, inner 16px",
           status: "bad",
-          code: ".outer { border-radius: 16px; padding: 16px; }\n.inner { border-radius: 16px; }",
+          editable: true,
           tailwind: '<div class="rounded-2xl p-4">\n  <div class="rounded-2xl">',
-          html: radiiMismatchHtml,
+          htmlSource: `<div class="outer">
+  <div class="inner"></div>
+</div>`,
+          cssSource: `.outer { width: 160px; background: #eee; border-radius: 16px; padding: 16px; }
+.inner { background: #fff; border: 1px solid #ddd; border-radius: 16px; height: 60px; }`,
         },
         {
           label: "Outer 16px, inner 8px (16 − padding)",
           status: "good",
-          code: ".outer { border-radius: 16px; padding: 16px; }\n.inner { border-radius: 8px; }",
+          editable: true,
           tailwind: '<div class="rounded-2xl p-4">\n  <div class="rounded-lg">',
-          html: radiiProportionalHtml,
+          htmlSource: `<div class="outer">
+  <div class="inner"></div>
+</div>`,
+          cssSource: `.outer { width: 160px; background: #eee; border-radius: 16px; padding: 16px; }
+.inner { background: #fff; border: 1px solid #ddd; border-radius: 8px; height: 60px; }`,
         },
       ],
       height: 150,
@@ -1280,14 +1144,28 @@ export const designPrinciples: DocArticle = {
         {
           label: "Two adjacent borders",
           status: "bad",
-          code: ".a { border-bottom: 1px solid #d4d4d4; }\n.b { border-top: 1px solid #d4d4d4; }",
-          html: doubleDivideHtml,
+          editable: true,
+          htmlSource: `<div class="wrap">
+  <div class="section-a">Section one</div>
+  <div class="section-b">Section two</div>
+</div>`,
+          cssSource: `body { align-items: flex-start; justify-content: flex-start; }
+.wrap { width: 180px; text-align: left; }
+.section-a { border-bottom: 1px solid #d4d4d4; padding-bottom: 10px; margin-bottom: 2px; font-size: 12px; color: #171717; }
+.section-b { border-top: 1px solid #d4d4d4; padding-top: 10px; font-size: 12px; color: #171717; }`,
         },
         {
           label: "One shared divide",
           status: "good",
-          code: ".b { border-top: 1px solid #d4d4d4; }",
-          html: singleDivideHtml,
+          editable: true,
+          htmlSource: `<div class="wrap">
+  <div class="section-a">Section one</div>
+  <div class="section-b">Section two</div>
+</div>`,
+          cssSource: `body { align-items: flex-start; justify-content: flex-start; }
+.wrap { width: 180px; text-align: left; }
+.section-a { padding-bottom: 12px; font-size: 12px; color: #171717; }
+.section-b { border-top: 1px solid #d4d4d4; padding-top: 12px; font-size: 12px; color: #171717; }`,
         },
       ],
       height: 140,
@@ -1305,14 +1183,18 @@ export const designPrinciples: DocArticle = {
         {
           label: "Shadow on dark",
           status: "bad",
-          code: "box-shadow: 0 8px 16px rgba(0,0,0,0.4);",
-          html: darkShadowHtml,
+          editable: true,
+          htmlSource: `<div class="box"></div>`,
+          cssSource: `body { background: #171717; }
+.box { width: 140px; height: 80px; background: #262626; border-radius: 8px; box-shadow: 0 8px 16px rgba(0,0,0,0.4); }`,
         },
         {
           label: "Border on dark",
           status: "good",
-          code: "border: 1px solid #404040;",
-          html: darkBorderHtml,
+          editable: true,
+          htmlSource: `<div class="box"></div>`,
+          cssSource: `body { background: #171717; }
+.box { width: 140px; height: 80px; background: #262626; border: 1px solid #404040; border-radius: 8px; }`,
         },
       ],
       height: 130,
@@ -1330,16 +1212,18 @@ export const designPrinciples: DocArticle = {
         {
           label: "Border + shadow",
           status: "bad",
-          code: "border: 1px solid #ddd;\nbox-shadow: 0 12px 24px rgba(0,0,0,0.18);",
+          editable: true,
           tailwind: '<div class="border border-neutral-300 shadow-lg">',
-          html: borderShadowHtml,
+          htmlSource: `<div class="card">Border + shadow</div>`,
+          cssSource: `.card { width: 100%; max-width: 180px; background: #fff; border: 1px solid #ddd; box-shadow: 0 12px 24px rgba(0,0,0,0.18); border-radius: 8px; padding: 20px; font-size: 12px; color: #525252; }`,
         },
         {
           label: "Border only",
           status: "good",
-          code: "border: 1px solid #ddd;",
+          editable: true,
           tailwind: '<div class="border border-neutral-300">',
-          html: borderOnlyHtml,
+          htmlSource: `<div class="card">Border only</div>`,
+          cssSource: `.card { width: 100%; max-width: 180px; background: #fff; border: 1px solid #ddd; border-radius: 8px; padding: 20px; font-size: 12px; color: #525252; }`,
         },
       ],
       height: 150,
@@ -1357,14 +1241,26 @@ export const designPrinciples: DocArticle = {
         {
           label: "Icon at full contrast",
           status: "bad",
-          code: "svg { fill: #0a0a0a; }",
-          html: iconHeavyHtml,
+          editable: true,
+          htmlSource: `<div class="row">
+  <svg class="icon" width="16" height="16" viewBox="0 0 16 16"><circle cx="8" cy="8" r="7"/></svg>
+  <span class="label">Notifications</span>
+</div>`,
+          cssSource: `.row { display: flex; align-items: center; gap: 8px; }
+.icon { fill: #0a0a0a; }
+.label { font-size: 13px; color: #0a0a0a; }`,
         },
         {
           label: "Icon muted",
           status: "good",
-          code: "svg { fill: #a3a3a3; }",
-          html: iconMutedHtml,
+          editable: true,
+          htmlSource: `<div class="row">
+  <svg class="icon" width="16" height="16" viewBox="0 0 16 16"><circle cx="8" cy="8" r="7"/></svg>
+  <span class="label">Notifications</span>
+</div>`,
+          cssSource: `.row { display: flex; align-items: center; gap: 8px; }
+.icon { fill: #a3a3a3; }
+.label { font-size: 13px; color: #0a0a0a; }`,
         },
       ],
       height: 110,
@@ -1374,13 +1270,13 @@ export const designPrinciples: DocArticle = {
     { kind: "heading", text: "Beyond the source: two rules this site adds" },
     {
       kind: "paragraph",
-      text: "Hobday's list covers static design — this site is interactive, so it adds two rules of its own: color as an interaction cue, and motion.",
+      text: "Hobday's list covers static design; this site is interactive, so it adds two of its own.",
     },
 
     { kind: "heading", text: "29. One accent color, used deliberately" },
     {
       kind: "paragraph",
-      text: "This site reserves a single signature blue for the handful of things that are always interactive — links, the current-page indicator, and focus rings.",
+      text: "This site reserves a single signature blue for things that are always interactive — links, the current-page indicator, focus rings.",
     },
     {
       kind: "demo",
@@ -1388,16 +1284,27 @@ export const designPrinciples: DocArticle = {
         {
           label: "No accent",
           status: "bad",
-          code: "a { color: inherit; }",
+          editable: true,
           tailwind: '<a class="text-inherit underline">',
-          html: noAccentLinkHtml,
+          htmlSource: `<p class="text">Read the <a href="#" class="link">full guide</a> for details.</p>`,
+          cssSource: `body { align-items: flex-start; justify-content: flex-start; text-align: left; }
+.text { max-width: 220px; font-size: 14px; line-height: 1.5; color: #171717; margin: 0; }
+.link { color: inherit; text-decoration: underline; }`,
         },
         {
           label: "One accent, used deliberately",
           status: "good",
-          code: "a { color: #0060df; }\n.current { border-left: 3px solid #0060df; color: #0060df; }",
+          editable: true,
           tailwind: '<a class="text-accent">\n<div class="border-l-2 border-accent text-accent">',
-          html: accentUsageHtml,
+          htmlSource: `<div class="stack">
+  <p class="text">Read the <a href="#" class="link">full guide</a> for details.</p>
+  <div class="current">Current page</div>
+</div>`,
+          cssSource: `body { align-items: flex-start; justify-content: flex-start; text-align: left; }
+.stack { display: flex; flex-direction: column; gap: 14px; width: 100%; max-width: 220px; }
+.text { margin: 0; font-size: 14px; line-height: 1.5; color: #171717; }
+.link { color: #0060df; text-decoration: underline; }
+.current { border-left: 3px solid #0060df; padding: 4px 0 4px 10px; font-size: 13px; font-weight: 600; color: #0060df; }`,
         },
       ],
       height: 150,
@@ -1408,7 +1315,15 @@ export const designPrinciples: DocArticle = {
       panes: [
         {
           label: "Hover / focus darkens the accent",
-          html: accentHoverHtml,
+          editable: true,
+          htmlSource: `<a href="#" class="accent-link">Hover or tab to me</a>`,
+          cssSource: `.accent-link {
+  font: 600 14px system-ui, sans-serif;
+  color: #0060df;
+  text-decoration: underline;
+  transition: color 160ms ease-out;
+}
+.accent-link:hover, .accent-link:focus-visible { color: #0345a5; }`,
         },
       ],
       height: 100,
@@ -1417,7 +1332,7 @@ export const designPrinciples: DocArticle = {
     {
       kind: "callout",
       variant: "note",
-      text: "The accent is deliberately a single hue. A second accent color for e.g. warning or success states would undercut rule 3's point — contrast, not color, is what should carry meaning.",
+      text: "The accent is deliberately a single hue — a second accent for warning/success states would undercut rule 3: contrast, not color, should carry meaning.",
     },
     {
       kind: "caniuse",
@@ -1429,7 +1344,7 @@ export const designPrinciples: DocArticle = {
     { kind: "heading", text: "30. Motion is short and eases out" },
     {
       kind: "paragraph",
-      text: "Interface transitions here run under 200ms on a gentle ease-out curve — long enough to feel intentional, short enough to never be waited on.",
+      text: "Interface transitions here run under 200ms on a gentle ease-out curve — long enough to feel intentional, short enough to never wait on.",
     },
     {
       kind: "demo",
@@ -1437,16 +1352,64 @@ export const designPrinciples: DocArticle = {
         {
           label: "600ms, ease-in-out",
           status: "bad",
-          code: "transition: transform 600ms ease-in-out;",
+          editable: true,
           tailwind: '<div class="transition-transform duration-600 ease-in-out">',
-          html: slowMotionHtml,
+          htmlSource: `<div class="track"><div class="box">Hover</div></div>`,
+          cssSource: `.track {
+  width: 160px;
+  height: 48px;
+  border: 1px dashed #d4d4d4;
+  border-radius: 8px;
+  position: relative;
+  overflow: hidden;
+}
+.box {
+  position: absolute;
+  left: 6px;
+  top: 6px;
+  width: 60px;
+  height: 36px;
+  border-radius: 6px;
+  background: #0a0a0a;
+  color: #fafafa;
+  font-size: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform 600ms ease-in-out;
+}
+.track:hover .box { transform: translateX(90px); }`,
         },
         {
           label: "160ms, ease-out",
           status: "good",
-          code: "transition: transform 160ms ease-out;",
+          editable: true,
           tailwind: '<div class="transition-transform duration-160 ease-out">',
-          html: fastMotionHtml,
+          htmlSource: `<div class="track"><div class="box">Hover</div></div>`,
+          cssSource: `.track {
+  width: 160px;
+  height: 48px;
+  border: 1px dashed #d4d4d4;
+  border-radius: 8px;
+  position: relative;
+  overflow: hidden;
+}
+.box {
+  position: absolute;
+  left: 6px;
+  top: 6px;
+  width: 60px;
+  height: 36px;
+  border-radius: 6px;
+  background: #0a0a0a;
+  color: #fafafa;
+  font-size: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform 160ms ease-out;
+}
+.track:hover .box { transform: translateX(90px); }`,
         },
       ],
       height: 110,
