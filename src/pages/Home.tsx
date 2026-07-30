@@ -1,5 +1,6 @@
 import { Link } from "react-router-dom";
 import { LinkButton } from "../components/Button";
+import TipWidget from "../components/TipWidget";
 import {
   HeroIllustration,
   ScaleIcon,
@@ -55,6 +56,8 @@ export default function Home() {
         </div>
         <HeroIllustration className="hidden w-full max-w-xs shrink-0 text-divider sm:block md:w-80" />
       </section>
+
+      <TipWidget />
 
       <section className="mt-8 border-t border-border py-14">
         <div className="grid gap-10 sm:grid-cols-3">
