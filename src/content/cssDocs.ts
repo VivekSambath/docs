@@ -1,4 +1,5 @@
 import type { DocSection } from "./articles";
+import { animatingDetailsDoc } from "./css-docs/animating-details";
 import { animationTimelineDoc } from "./css-docs/animation-timeline";
 import { contrastColorDoc } from "./css-docs/contrast-color";
 import { transitionsDoc } from "./css-docs/transitions";
@@ -23,7 +24,7 @@ export type CssDoc = {
   sections: DocSection[];
 };
 
-export const cssDocs: CssDoc[] = [contrastColorDoc, transitionsDoc, animationTimelineDoc];
+export const cssDocs: CssDoc[] = [contrastColorDoc, transitionsDoc, animationTimelineDoc, animatingDetailsDoc];
 
 export function getCssDoc(slug: string): CssDoc | undefined {
   return cssDocs.find((doc) => doc.slug === slug);
