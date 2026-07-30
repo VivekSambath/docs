@@ -314,8 +314,9 @@ export const contrastColorDoc: CssDoc = {
     { kind: "heading", text: "What it does" },
     {
       kind: "paragraph",
-      text: "contrast-color() takes a color and returns whichever of black or white has the higher contrast against it, based on the WCAG contrast ratio. It's designed for exactly one job: choosing a readable foreground color for a background you don't control ahead of time — a user-picked brand color, a tag color loaded from a CMS, an avatar background generated from a username.",
+      text: "`contrast-color()` takes a color and **returns whichever of black or white has the higher contrast** against it, based on the WCAG contrast ratio. It's designed for exactly one job: ==choosing a readable foreground color for a background you don't control ahead of time== — a user-picked brand color, a tag color loaded from a CMS, an avatar background generated from a username.",
     },
+    { kind: "heading", text: "Syntax" },
     {
       kind: "code",
       language: "css",

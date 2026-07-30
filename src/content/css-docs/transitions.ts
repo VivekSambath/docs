@@ -210,8 +210,9 @@ export const transitionsDoc: CssDoc = {
     { kind: "heading", text: "What it does" },
     {
       kind: "paragraph",
-      text: "Change a CSS property's value — via :hover, a class toggle, a media query flip — and by default the new value applies instantly, in a single frame. transition tells the browser to interpolate between the old and new value over a given duration instead, animating it frame by frame without a single line of JavaScript.",
+      text: "Change a CSS property's value — via `:hover`, a class toggle, a media query flip — and by default the new value applies **instantly, in a single frame**. `transition` tells the browser to ==interpolate between the old and new value over a given duration== instead, animating it frame by frame **without a single line of JavaScript**.",
     },
+    { kind: "heading", text: "Syntax" },
     {
       kind: "code",
       language: "css",

@@ -143,8 +143,9 @@ export const animationTimelineDoc: CssDoc = {
     { kind: "heading", text: "What it does" },
     {
       kind: "paragraph",
-      text: "Every animation normally advances with time: animation-duration says how many seconds it takes to go from 0% to 100%. animation-timeline replaces that clock with a scroll position — the animation's progress becomes a direct function of how far a scroller (or an element within it) has scrolled, updating on the compositor thread in sync with the scrollbar rather than on a JS-driven rAF loop.",
+      text: "Every animation normally advances with time: `animation-duration` says how many seconds it takes to go from 0% to 100%. `animation-timeline` **replaces that clock with a scroll position** — ==the animation's progress becomes a direct function of how far a scroller (or an element within it) has scrolled==, updating on the compositor thread in sync with the scrollbar rather than on a JS-driven rAF loop.",
     },
+    { kind: "heading", text: "Syntax" },
     {
       kind: "code",
       language: "css",
