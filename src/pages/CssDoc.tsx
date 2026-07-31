@@ -1,6 +1,7 @@
 import { Link, Navigate, useParams } from "react-router-dom";
 import { getCssDoc } from "../content/cssDocs";
 import DocContent from "../components/DocContent";
+import SectionRail from "../components/SectionRail";
 import ReadingProgress from "../components/ReadingProgress";
 import { cssDocIllustrations } from "../components/cssDocIllustrations";
 import { readingTimeForCssDoc } from "../components/readingTime";
@@ -34,7 +35,13 @@ export default function CssDoc() {
             <span aria-hidden="true">·</span>
             <span>{minutes} min read</span>
           </p>
-          <h1 className="mb-3 font-mono text-4xl md:text-5xl">{doc.title}</h1>
+          <h1
+            className="mb-3 cursor-pointer font-mono text-4xl md:text-5xl"
+            onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
+            title="Scroll to top"
+          >
+            {doc.title}
+          </h1>
           <p className="max-w-prose text-lg text-muted">
             {doc.excerpt}
           </p>
@@ -46,6 +53,7 @@ export default function CssDoc() {
 
       <div className="mt-12">
         <DocContent sections={doc.sections} />
+        <SectionRail sections={doc.sections} />
       </div>
     </article>
   );

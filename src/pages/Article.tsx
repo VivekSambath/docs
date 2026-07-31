@@ -2,6 +2,7 @@ import { useEffect } from "react";
 import { Link, Navigate, useLocation, useParams } from "react-router-dom";
 import { getArticle } from "../content/articles";
 import DocContent from "../components/DocContent";
+import SectionRail from "../components/SectionRail";
 import { renderInline } from "../components/inline";
 import ReadingProgress from "../components/ReadingProgress";
 import { docIllustrations } from "../components/docIllustrations";
@@ -45,7 +46,13 @@ export default function Article() {
             {article.kind === "doc" && <span aria-hidden="true">·</span>}
             <span>{minutes} min read</span>
           </p>
-          <h1 className="mb-3 text-4xl md:text-5xl">{article.title}</h1>
+          <h1
+            className="mb-3 cursor-pointer text-4xl md:text-5xl"
+            onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
+            title="Scroll to top"
+          >
+            {article.title}
+          </h1>
           <p className="max-w-prose text-lg text-muted">
             {article.excerpt}
           </p>
@@ -71,6 +78,7 @@ export default function Article() {
               </a>
             </p>
           )}
+          <SectionRail sections={article.sections} />
         </div>
       )}
 

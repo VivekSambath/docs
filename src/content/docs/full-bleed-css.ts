@@ -4,7 +4,7 @@ import type { DocArticle } from "../articles";
 // The editable-pane renderer (DocContent.tsx's EditablePane/buildEditableDoc)
 // wraps htmlSource/cssSource into a full document itself — a minimal shell
 // with `* { box-sizing: border-box }`, `html, body { margin: 0 }`, and
-// `body { font; color; background: #fff; padding: 16px }`. Every cssSource
+// `body { font; color; background: #e5e5e5; padding: 16px }`. Every cssSource
 // below is written to layer on top of that shell (re-declaring `body` rules
 // where a demo needs to remove the default padding or force scroll height).
 

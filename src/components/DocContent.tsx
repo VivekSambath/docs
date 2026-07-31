@@ -1,47 +1,10 @@
 import { useMemo, useState } from "react";
-import type { ReactNode } from "react";
 import type { DocDemoPaneEditable, DocSection } from "../content/articles";
 import { slugify } from "./docToc";
+import { calloutAccent, calloutIcon, calloutLabel } from "./calloutStyles";
+import Highlighted from "./Highlighted";
 import { renderInline } from "./inline";
 import Reveal from "./Reveal";
-
-const calloutLabel: Record<string, string> = {
-  tip: "Tip",
-  note: "Note",
-  warning: "Warning",
-};
-
-const calloutAccent: Record<string, string> = {
-  tip: "border-green-600/70",
-  note: "border-accent",
-  warning: "border-amber-500/80",
-};
-
-// Small monochrome line icons — stroke-only (no fills) to match the site's
-// flat, shadow-free visual language; they inherit color via currentColor.
-const calloutIcon: Record<string, ReactNode> = {
-  tip: (
-    <svg viewBox="0 0 16 16" fill="none" strokeWidth="1.4" stroke="currentColor" aria-hidden="true">
-      <path d="M6 14.5h4" strokeLinecap="round" />
-      <path d="M6.5 12.5h3" strokeLinecap="round" />
-      <path d="M8 1.5a4.5 4.5 0 0 0-2.5 8.25c.5.35.75.9.75 1.4v.35h3.5v-.35c0-.5.25-1.05.75-1.4A4.5 4.5 0 0 0 8 1.5Z" strokeLinejoin="round" />
-    </svg>
-  ),
-  note: (
-    <svg viewBox="0 0 16 16" fill="none" strokeWidth="1.4" stroke="currentColor" aria-hidden="true">
-      <circle cx="8" cy="8" r="6.5" />
-      <path d="M8 7.25v4" strokeLinecap="round" />
-      <circle cx="8" cy="4.9" r="0.15" fill="currentColor" stroke="none" />
-    </svg>
-  ),
-  warning: (
-    <svg viewBox="0 0 16 16" fill="none" strokeWidth="1.4" stroke="currentColor" aria-hidden="true">
-      <path d="M8 1.75 14.75 13.5H1.25L8 1.75Z" strokeLinejoin="round" />
-      <path d="M8 6.5v3.25" strokeLinecap="round" />
-      <circle cx="8" cy="11.75" r="0.15" fill="currentColor" stroke="none" />
-    </svg>
-  ),
-};
 
 function CopyButton({ text }: { text: string }) {
   const [copied, setCopied] = useState(false);
@@ -140,11 +103,11 @@ function CodeBlock({
           <CopyButton text={code} />
         </span>
       </div>
-      <pre
-        className={`overflow-x-auto border-x border-t border-border bg-bg p-4 text-base ${tailwind ? "" : "rounded-b-md border-b"}`}
-      >
-        <code className="font-mono">{code}</code>
-      </pre>
+      <Highlighted
+        code={code}
+        language={language}
+        preClassName={`overflow-x-auto border-x border-t border-border bg-bg p-4 text-base ${tailwind ? "" : "rounded-b-md border-b"}`}
+      />
       {tailwind && (
         <pre className="overflow-x-auto rounded-b-md border border-border bg-bg p-4 text-base">
           <code className="font-mono text-muted">
@@ -200,9 +163,11 @@ function DemoBlock({ panes, toggle, height = 220, caption }: Extract<DocSection,
               )}
             </div>
             {pane.code && (
-              <pre className="overflow-x-auto border-b border-border bg-bg p-3 text-base">
-                <code className="font-mono">{pane.code}</code>
-              </pre>
+              <Highlighted
+                code={pane.code}
+                language="css"
+                preClassName="overflow-x-auto border-b border-border bg-bg p-3 text-base"
+              />
             )}
             {pane.tailwind && (
               <pre className="overflow-x-auto border-b border-border bg-bg p-3 text-base">
@@ -244,7 +209,7 @@ function buildEditableDoc(htmlSource: string, cssSource: string) {
 <style>
   * { box-sizing: border-box; }
   html, body { margin: 0; }
-  body { font: 14px/1.5 system-ui, sans-serif; color: #171717; background: #fff; padding: 16px; }
+  body { font: 14px/1.5 system-ui, sans-serif; color: #171717; background: #e5e5e5; padding: 16px; }
 ${cssSource}
 </style>
 </head>
@@ -273,6 +238,8 @@ function EditablePane({ pane, on }: { pane: DocDemoPaneEditable; on: boolean }) 
     }
   }
 
+  // Applied on every keystroke — the iframe reloads live as the reader
+  // types, so a transition-duration change is visible immediately.
   const srcDoc = useMemo(() => buildEditableDoc(htmlSource, cssSource), [htmlSource, cssSource]);
 
   function reset() {
@@ -308,34 +275,40 @@ function EditablePane({ pane, on }: { pane: DocDemoPaneEditable; on: boolean }) 
           )}
         </div>
       </div>
-      <label className="flex items-center gap-1.5 border-t border-border bg-surface/60 px-3 py-1 text-[11px] font-semibold uppercase tracking-wide text-muted">
-        <span aria-hidden="true" className="h-1.5 w-1.5 rounded-full bg-accent" />
-        HTML
-      </label>
-      <textarea
-        spellCheck={false}
-        value={htmlSource}
-        onChange={(event) => {
-          setDirty(true);
-          setHtmlSource(event.target.value);
-        }}
-        rows={Math.min(8, Math.max(2, htmlSource.split("\n").length))}
-        className={editorClass}
-      />
-      <label className="flex items-center gap-1.5 border-t border-border bg-surface/60 px-3 py-1 text-[11px] font-semibold uppercase tracking-wide text-muted">
-        <span aria-hidden="true" className="h-1.5 w-1.5 rounded-full bg-accent" />
-        CSS
-      </label>
-      <textarea
-        spellCheck={false}
-        value={cssSource}
-        onChange={(event) => {
-          setDirty(true);
-          setCssSource(event.target.value);
-        }}
-        rows={Math.min(10, Math.max(2, cssSource.split("\n").length))}
-        className={editorClass}
-      />
+      <div className="grid grid-cols-1 sm:grid-cols-2">
+        <div>
+          <label className="flex items-center gap-1.5 border-t border-border bg-surface/60 px-3 py-1 text-[11px] font-semibold uppercase tracking-wide text-muted">
+            <span aria-hidden="true" className="h-1.5 w-1.5 rounded-full bg-accent" />
+            HTML
+          </label>
+          <textarea
+            spellCheck={false}
+            value={htmlSource}
+            onChange={(event) => {
+              setDirty(true);
+              setHtmlSource(event.target.value);
+            }}
+            rows={Math.min(8, Math.max(2, htmlSource.split("\n").length))}
+            className={`${editorClass} sm:border-r-0`}
+          />
+        </div>
+        <div>
+          <label className="flex items-center gap-1.5 border-t border-border bg-surface/60 px-3 py-1 text-[11px] font-semibold uppercase tracking-wide text-muted">
+            <span aria-hidden="true" className="h-1.5 w-1.5 rounded-full bg-accent" />
+            CSS
+          </label>
+          <textarea
+            spellCheck={false}
+            value={cssSource}
+            onChange={(event) => {
+              setDirty(true);
+              setCssSource(event.target.value);
+            }}
+            rows={Math.min(8, Math.max(2, cssSource.split("\n").length))}
+            className={editorClass}
+          />
+        </div>
+      </div>
       {pane.tailwind && (
         <pre className="overflow-x-auto border-x border-t border-border bg-bg p-3 text-sm">
           <code className="font-mono text-muted">
@@ -393,9 +366,11 @@ function EditableDemoBlock({ panes, toggle, caption }: Extract<DocSection, { kin
                 {pane.status && <span className="font-medium">{demoStatusLabel[pane.status]}</span>}
               </div>
               {pane.code && (
-                <pre className="overflow-x-auto border-b border-border bg-bg p-3 text-sm">
-                  <code className="font-mono">{pane.code}</code>
-                </pre>
+                <Highlighted
+                  code={pane.code}
+                  language="css"
+                  preClassName="overflow-x-auto border-b border-border bg-bg p-3 text-sm"
+                />
               )}
               {pane.tailwind && (
                 <pre className="overflow-x-auto border-b border-border bg-bg p-3 text-sm">
@@ -666,9 +641,11 @@ export default function DocContent({ sections }: { sections: DocSection[] }) {
                       {side.label}
                     </p>
                     {side.code && (
-                      <pre className="mb-3 overflow-x-auto rounded-md border border-border bg-surface/60 p-3 text-sm">
-                        <code className="font-mono">{side.code}</code>
-                      </pre>
+                      <Highlighted
+                        code={side.code}
+                        language={side.language ?? "css"}
+                        preClassName="mb-3 overflow-x-auto rounded-md border border-border bg-surface/60 p-3 text-sm"
+                      />
                     )}
                     <ul className="flex flex-col gap-1.5">
                       {side.points.map((point, pointIndex) => (

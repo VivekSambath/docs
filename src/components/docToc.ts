@@ -24,3 +24,29 @@ export function getHeadings(sections: DocSection[]) {
     )
     .map((section) => ({ id: slugify(section.text), text: section.text, level: section.level ?? 2 }));
 }
+
+export type SectionSpotlight = {
+  id: string;
+  text: string;
+  level: 2 | 3;
+  callout?: Extract<DocSection, { kind: "callout" }>;
+};
+
+// Pairs each heading with the first callout that follows it (and precedes the
+// next heading) — the "spotlight" a scroll-spy rail can surface for whatever
+// section is currently in view.
+export function getSectionSpotlights(sections: DocSection[]): SectionSpotlight[] {
+  const spotlights: SectionSpotlight[] = [];
+  let current: SectionSpotlight | null = null;
+
+  for (const section of sections) {
+    if (section.kind === "heading") {
+      current = { id: slugify(section.text), text: section.text, level: section.level ?? 2 };
+      spotlights.push(current);
+    } else if (section.kind === "callout" && current && !current.callout) {
+      current.callout = section;
+    }
+  }
+
+  return spotlights;
+}

@@ -142,6 +142,24 @@
       opacity: 1;
       transform: translateY(0);
     }
+
+    /* SectionRail's spotlight card: keyed by active heading id, so React
+       remounts (not restyles) it on scroll-spy change — this animation runs
+       fresh every time instead of needing a visible/hidden class toggle. */
+    .spotlight-in {
+      animation: spotlight-in 320ms ease-out both;
+    }
+  }
+
+  @keyframes spotlight-in {
+    from {
+      opacity: 0;
+      transform: translateY(6px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
   }
 
   @keyframes page-in {
@@ -157,10 +175,16 @@
 
   /* MDN-style native <details>/<summary> accordion: hide the default marker,
      rotate a custom chevron instead. Chevron sits outside any nested <a> so
-     clicking it toggles without triggering navigation. */
+     clicking it toggles without triggering navigation. cursor: pointer is
+     scoped off the nested <a> (see below) so selecting its label text shows
+     a text cursor instead of the toggle's pointer. */
   .sidebar-details > summary {
     list-style: none;
     cursor: pointer;
+  }
+
+  .sidebar-details > summary a {
+    cursor: auto;
   }
 
   .sidebar-details > summary::-webkit-details-marker {
@@ -179,5 +203,24 @@
 
   .sidebar-details[open] > summary > .sidebar-chevron {
     transform: rotate(90deg);
+  }
+
+  /* Shiki (VS Code's highlighter) emits dual-theme output as CSS variables
+     per token — --shiki-light/-dark — rather than baked-in colors, so it can
+     be wired to this site's .dark class instead of Shiki's default
+     prefers-color-scheme media query. See highlighter.ts. */
+  .shiki {
+    margin: 0;
+    background-color: transparent !important;
+  }
+
+  .shiki,
+  .shiki span {
+    color: var(--shiki-light);
+  }
+
+  :root.dark .shiki,
+  :root.dark .shiki span {
+    color: var(--shiki-dark);
   }
 }
