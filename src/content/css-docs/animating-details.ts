@@ -502,7 +502,7 @@ export const animatingDetailsDoc: CssDoc = {
     {
       kind: "caniuse",
       feature: "mdn-html_elements_details_name",
-      title: "name=\"\" exclusive accordions",
+      title: "details name attribute",
       variant: "link",
       caption: "The attribute behind the no-JS one-open-at-a-time accordion above.",
     },
