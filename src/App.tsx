@@ -1,11 +1,13 @@
+import { lazy, Suspense } from "react";
 import { createHashRouter, RouterProvider } from "react-router-dom";
 import Layout from "./components/Layout";
-import Home from "./pages/Home";
-import Articles from "./pages/Articles";
-import Article from "./pages/Article";
-import CssDocs from "./pages/CssDocs";
-import CssDoc from "./pages/CssDoc";
-import NotFound from "./pages/NotFound";
+
+const Home = lazy(() => import("./pages/Home"));
+const Articles = lazy(() => import("./pages/Articles"));
+const Article = lazy(() => import("./pages/Article"));
+const CssDocs = lazy(() => import("./pages/CssDocs"));
+const CssDoc = lazy(() => import("./pages/CssDoc"));
+const NotFound = lazy(() => import("./pages/NotFound"));
 
 const router = createHashRouter([
   {
@@ -22,5 +24,9 @@ const router = createHashRouter([
 ]);
 
 export default function App() {
-  return <RouterProvider router={router} />;
+  return (
+    <Suspense fallback={null}>
+      <RouterProvider router={router} />
+    </Suspense>
+  );
 }
