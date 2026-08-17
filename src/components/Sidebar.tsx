@@ -3,8 +3,9 @@ import type { ReactNode, ComponentType } from "react";
 import { NavLink, useLocation } from "react-router-dom";
 import { articles, type Article } from "../content/articles";
 import { cssDocs } from "../content/cssDocs";
+import { jsDocs } from "../content/jsDocs";
 import { getHeadings, scrollToId } from "./docToc";
-import { HomeIcon, ArticlesIcon, CodeIcon, SidebarIcon } from "./illustrations";
+import { HomeIcon, ArticlesIcon, CodeIcon, BracesIcon, SidebarIcon } from "./illustrations";
 
 const COLLAPSE_STORAGE_KEY = "sidebar-collapsed";
 
@@ -42,10 +43,90 @@ function Chevron() {
 
 function SectionLabel({ children }: { children: ReactNode }) {
   return (
-    <summary className="mb-1 flex items-center gap-1.5 px-3 text-[13px] font-semibold tracking-wide text-muted uppercase">
+    <summary className="mb-1.5 flex items-center gap-1.5 px-3 text-[13px] font-semibold tracking-wide text-muted uppercase">
       <Chevron />
       {children}
     </summary>
+  );
+}
+
+type HeadingItem = { id: string; text: string; level: number };
+
+function HeadingList({ headings }: { headings: HeadingItem[] }) {
+  return (
+    <ul className="sidebar-tree ml-3.75 flex flex-col gap-0.5 py-1">
+      {headings.map((heading) => (
+        <li key={heading.id} className={heading.level === 3 ? "pl-6" : "pl-3"}>
+          <a
+            href={`#${heading.id}`}
+            onClick={scrollToId(heading.id)}
+            className="block rounded-md px-2 py-1.5 text-[15px] leading-6 font-medium text-muted no-underline transition-colors duration-150 hover:text-fg"
+          >
+            {heading.text}
+          </a>
+        </li>
+      ))}
+    </ul>
+  );
+}
+
+function DocGroup({
+  title,
+  items,
+  activeSlug,
+  activeHeadings,
+  basePath,
+  mono = false,
+}: {
+  title: string;
+  items: { slug: string; title: string }[];
+  activeSlug: string | undefined;
+  activeHeadings: HeadingItem[];
+  basePath: string;
+  mono?: boolean;
+}) {
+  if (items.length === 0) return null;
+
+  return (
+    <details open className="sidebar-details mt-5">
+      <SectionLabel>{title}</SectionLabel>
+      <ul className="sidebar-tree ml-3.75 flex flex-col gap-0.5">
+        {items.map((item) => {
+          const isActive = item.slug === activeSlug;
+          const headings = isActive ? activeHeadings : [];
+
+          if (headings.length > 1) {
+            return (
+              <li key={item.slug} className="pl-2">
+                <details open={isActive} className="sidebar-details">
+                  <summary className="flex items-center gap-1.5 pr-2">
+                    <Chevron />
+                    <NavLink
+                      to={`${basePath}/${item.slug}`}
+                      className={`${navLinkClass({ isActive }, false)} grow pl-0 ${mono ? "font-mono" : ""}`}
+                    >
+                      {item.title}
+                    </NavLink>
+                  </summary>
+                  <HeadingList headings={headings} />
+                </details>
+              </li>
+            );
+          }
+
+          return (
+            <li key={item.slug} className="pl-2">
+              <NavLink
+                to={`${basePath}/${item.slug}`}
+                className={(state) => `${navLinkClass(state)} ${mono ? "font-mono" : ""}`}
+              >
+                {item.title}
+              </NavLink>
+            </li>
+          );
+        })}
+      </ul>
+    </details>
   );
 }
 
@@ -119,6 +200,12 @@ export default function Sidebar() {
   const activeCssDoc = activeCssDocSlug ? cssDocs.find((doc) => doc.slug === activeCssDocSlug) : undefined;
   const cssDocHeadings = activeCssDoc ? getHeadings(activeCssDoc.sections) : [];
 
+  const activeJsDocSlug = location.pathname.startsWith("/js-docs/")
+    ? location.pathname.slice("/js-docs/".length)
+    : undefined;
+  const activeJsDoc = activeJsDocSlug ? jsDocs.find((doc) => doc.slug === activeJsDocSlug) : undefined;
+  const jsDocHeadings = activeJsDoc ? getHeadings(activeJsDoc.sections) : [];
+
   const docs = articles.filter(
     (article): article is Extract<Article, { kind: "doc" }> => article.kind === "doc",
   );
@@ -157,110 +244,53 @@ export default function Sidebar() {
           <NavItem to="/css-docs" end icon={CodeIcon} collapsed={collapsed}>
             CSS Docs
           </NavItem>
+          <NavItem to="/js-docs" end icon={BracesIcon} collapsed={collapsed}>
+            JS Docs
+          </NavItem>
         </ul>
 
-        {!collapsed && docs.length > 0 && (
-          <details open className="sidebar-details mt-5">
-            <SectionLabel>Frontend Best Practices</SectionLabel>
-            <ul className="flex flex-col gap-0.5 pl-2">
-              {docs.map((article) => {
-                const isActive = article.slug === activeSlug;
-                const articleHeadings = isActive ? headings : [];
-
-                if (articleHeadings.length > 1) {
-                  return (
-                    <li key={article.slug}>
-                      <details open={isActive} className="sidebar-details">
-                        <summary className="flex items-center gap-1.5 pr-2">
-                          <Chevron />
-                          <NavLink to={`/articles/${article.slug}`} className={`${navLinkClass({ isActive }, false)} grow pl-0`}>
-                            {article.title}
-                          </NavLink>
-                        </summary>
-                        <ul className="ml-4 flex flex-col gap-0.5">
-                          {articleHeadings.map((heading) => (
-                            <li key={heading.id} className={heading.level === 3 ? "pl-3" : ""}>
-                              <a
-                                href={`#${heading.id}`}
-                                onClick={scrollToId(heading.id)}
-                                className="block rounded-md px-2 py-1.5 text-[16px] leading-6 font-medium text-muted no-underline transition-colors duration-150 hover:text-fg"
-                              >
-                                {heading.text}
-                              </a>
-                            </li>
-                          ))}
-                        </ul>
-                      </details>
-                    </li>
-                  );
-                }
-
-                return (
-                  <NavItem key={article.slug} to={`/articles/${article.slug}`}>
-                    {article.title}
-                  </NavItem>
-                );
-              })}
-            </ul>
-          </details>
+        {!collapsed && (
+          <DocGroup
+            title="Frontend Best Practices"
+            items={docs}
+            activeSlug={activeSlug}
+            activeHeadings={headings}
+            basePath="/articles"
+          />
         )}
 
-        {!collapsed && cssDocs.length > 0 && (
-          <details open className="sidebar-details mt-5">
-            <SectionLabel>CSS Docs</SectionLabel>
-            <ul className="flex flex-col gap-0.5 pl-2">
-              {cssDocs.map((doc) => {
-                const isActive = doc.slug === activeCssDocSlug;
-                const docHeadings = isActive ? cssDocHeadings : [];
+        {!collapsed && (
+          <DocGroup
+            title="CSS Docs"
+            items={cssDocs}
+            activeSlug={activeCssDocSlug}
+            activeHeadings={cssDocHeadings}
+            basePath="/css-docs"
+            mono
+          />
+        )}
 
-                if (docHeadings.length > 1) {
-                  return (
-                    <li key={doc.slug}>
-                      <details open={isActive} className="sidebar-details">
-                        <summary className="flex items-center gap-1.5 pr-2">
-                          <Chevron />
-                          <NavLink to={`/css-docs/${doc.slug}`} className={`${navLinkClass({ isActive }, false)} grow pl-0 font-mono`}>
-                            {doc.title}
-                          </NavLink>
-                        </summary>
-                        <ul className="ml-4 flex flex-col gap-0.5">
-                          {docHeadings.map((heading) => (
-                            <li key={heading.id} className={heading.level === 3 ? "pl-3" : ""}>
-                              <a
-                                href={`#${heading.id}`}
-                                onClick={scrollToId(heading.id)}
-                                className="block rounded-md px-2 py-1.5 text-[16px] leading-6 font-medium text-muted no-underline transition-colors duration-150 hover:text-fg"
-                              >
-                                {heading.text}
-                              </a>
-                            </li>
-                          ))}
-                        </ul>
-                      </details>
-                    </li>
-                  );
-                }
-
-                return (
-                  <li key={doc.slug}>
-                    <NavLink to={`/css-docs/${doc.slug}`} className={(state) => `${navLinkClass(state)} font-mono`}>
-                      {doc.title}
-                    </NavLink>
-                  </li>
-                );
-              })}
-            </ul>
-          </details>
+        {!collapsed && (
+          <DocGroup
+            title="JS Docs"
+            items={jsDocs}
+            activeSlug={activeJsDocSlug}
+            activeHeadings={jsDocHeadings}
+            basePath="/js-docs"
+            mono
+          />
         )}
 
         {!collapsed && rest.length > 0 && (
           <details open className="sidebar-details mt-5">
             <SectionLabel>More</SectionLabel>
-            <ul className="flex flex-col gap-0.5 pl-2">
+            <ul className="sidebar-tree ml-3.75 flex flex-col gap-0.5">
               {rest.map((article) => (
-                <NavItem key={article.slug} to={`/articles/${article.slug}`}>
-                  {article.title}
-                </NavItem>
+                <li key={article.slug} className="pl-2">
+                  <NavLink to={`/articles/${article.slug}`} className={(state) => navLinkClass(state)}>
+                    {article.title}
+                  </NavLink>
+                </li>
               ))}
             </ul>
           </details>

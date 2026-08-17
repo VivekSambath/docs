@@ -52,6 +52,17 @@
   --font-sans:
     -apple-system, BlinkMacSystemFont, "Segoe UI", "Helvetica Neue", Arial,
     sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
+
+  /* Live-editor token colors for the generator playground (jsTokenizer.ts) —
+     restrained accent-family hues rather than a full VS Code Dark+ import,
+     so the editor still reads as this site rather than a foreign widget. */
+  --color-tok-kw: light-dark(#a626a4, #c586c0);
+  --color-tok-ctrl: light-dark(#0060df, #75bfff);
+  --color-tok-str: light-dark(#50942c, #ce9178);
+  --color-tok-com: light-dark(var(--color-neutral-400), #6a9955);
+  --color-tok-num: light-dark(#b2591e, #b5cea8);
+  --color-tok-fn: light-dark(#8a6d00, #dcdcaa);
+  --color-tok-class: light-dark(#0e7d73, #4ec9b0);
 }
 
 @layer base {
@@ -205,6 +216,14 @@
     transform: rotate(90deg);
   }
 
+  /* Tree guide: a vertical rule tracing each nesting level, so indentation
+     reads as a branch of the tree instead of just whitespace. Drawn as a
+     left border on the child <ul> (inset so it sits under the row icons),
+     with a matching border removed from the last child to avoid overshoot. */
+  .sidebar-tree {
+    border-left: 1px solid var(--color-divider);
+  }
+
   /* Shiki (VS Code's highlighter) emits dual-theme output as CSS variables
      per token — --shiki-light/-dark — rather than baked-in colors, so it can
      be wired to this site's .dark class instead of Shiki's default
@@ -223,4 +242,35 @@
   :root.dark .shiki span {
     color: var(--shiki-dark);
   }
+
+  /* Generator playground editor (GeneratorPlayground.tsx) — classic
+     "invisible textarea over a highlighted <pre>" technique: the textarea
+     supplies the caret/selection/input handling, the <pre> beneath renders
+     colored tokens. Both must share identical font metrics and padding or
+     the caret drifts out of alignment with the text it appears to sit in. */
+  .pg-editor-layer {
+    margin: 0;
+    white-space: pre;
+    tab-size: 2;
+  }
+
+  .pg-editor-textarea {
+    color: transparent;
+    background: transparent;
+    caret-color: var(--color-fg);
+    white-space: pre;
+    tab-size: 2;
+  }
+
+  .pg-editor-textarea::selection {
+    background-color: color-mix(in srgb, var(--color-accent) 30%, transparent);
+  }
+
+  .tok-kw { color: var(--color-tok-kw); }
+  .tok-ctrl { color: var(--color-tok-ctrl); }
+  .tok-str { color: var(--color-tok-str); }
+  .tok-com { color: var(--color-tok-com); font-style: italic; }
+  .tok-num { color: var(--color-tok-num); }
+  .tok-fn { color: var(--color-tok-fn); }
+  .tok-class { color: var(--color-tok-class); }
 }
