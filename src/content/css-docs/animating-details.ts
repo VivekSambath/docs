@@ -210,6 +210,34 @@ const iconHtmlSource = `<details>
   <p>Orders ship within 2 business days.</p>
 </details>`;
 
+// --- @starting-style: without vs. with ---------------------------------------
+
+const startingStyleChrome = `
+  details { border: 1px solid #d4d4d4; border-radius: 8px; }
+  :root { interpolate-size: allow-keywords; }
+  details::details-content {
+    overflow: hidden;
+    opacity: 0;
+    block-size: 0;
+    transition: block-size 260ms ease-in-out, opacity 260ms ease-in-out, content-visibility 260ms allow-discrete;
+  }
+  details[open]::details-content { opacity: 1; block-size: auto; }
+  details p { margin: 0 14px 12px; }
+`;
+
+const withoutStartingStyleHtml = () =>
+  shell(startingStyleChrome, detailsHtml);
+
+const withStartingStyleHtml = () =>
+  shell(
+    `${startingStyleChrome}
+  @starting-style {
+    details[open]::details-content { opacity: 0; block-size: 0; }
+  }
+  `,
+    detailsHtml,
+  );
+
 const iconCss = `summary {
   display: flex;
   align-items: center;
@@ -451,6 +479,41 @@ export const animatingDetailsDoc: CssDoc = {
     },
     {
       kind: "callout",
+      variant: "tip",
+      text: "The reason the right pane eases shut instead of snapping: `@starting-style` gives the browser a defined **from** state for the newly-opened item the instant it's inserted, so `opacity`/`block-size` can transition from those starting values instead of jumping straight to their final ones — and the forced-closed item transitions normally because `[open]` was already present a frame earlier. Without it, the `::details-content` version would jump-cut exactly like the grid-rows one.",
+    },
+    {
+      kind: "demo",
+      panes: [
+        {
+          label: "Without @starting-style — opens instantly",
+          status: "bad",
+          code: "details[open]::details-content {\n  opacity: 1;\n  block-size: auto;\n}\n/* no @starting-style block — no \"from\" frame to ease in from */",
+          html: withoutStartingStyleHtml,
+        },
+        {
+          label: "With @starting-style — eases in",
+          status: "good",
+          code: "details[open]::details-content {\n  opacity: 1;\n  block-size: auto;\n}\n@starting-style {\n  details[open]::details-content {\n    opacity: 0;\n    block-size: 0;\n  }\n}",
+          html: withStartingStyleHtml,
+        },
+      ],
+      height: 150,
+      caption: "Both panes share the exact same interpolate-size + ::details-content setup — only the @starting-style block differs. Click to open, then close, and compare.",
+    },
+    {
+      kind: "table",
+      headers: ["", "Without @starting-style", "With @starting-style"],
+      rows: [
+        ["block-size and opacity are animatable", "Yes — interpolate-size covers that", "Yes — same"],
+        ["\"From\" frame when opening", "None defined — browser has nothing to ease from", "opacity: 0; block-size: 0, set explicitly"],
+        ["Opening", "Jump cut — pops straight to full height, opacity 1", "Eases in from 0 → full height, opacity 0 → 1"],
+        ["Closing", "Eases out normally", "Eases out normally — identical to the left pane"],
+        ["Why closing isn't affected", "The open state was already a real, rendered frame a moment earlier, so there's already a \"from\" to ease from", "Same — @starting-style only supplies a missing starting frame, it doesn't change one that already exists"],
+      ],
+    },
+    {
+      kind: "callout",
       variant: "note",
       text: "Bonus you keep for free: find-in-page (Ctrl+F) can match text inside a closed <details> in Chromium, and the browser auto-opens the matching item. Both techniques preserve this, because the content is clipped — never display: none.",
     },
@@ -522,7 +585,14 @@ export const animatingDetailsDoc: CssDoc = {
       kind: "caniuse",
       feature: "mdn-css_properties_transition-behavior",
       title: "transition-behavior: allow-discrete",
-      caption: "Needed so content-visibility can wait until the close transition finishes. See the transition doc for @starting-style, its usual pairing.",
+      caption: "Needed so content-visibility can wait until the close transition finishes — paired with @starting-style below.",
+    },
+    {
+      kind: "caniuse",
+      feature: "mdn-css_at-rules_starting-style",
+      title: "@starting-style",
+      variant: "link",
+      caption: "What lets the accordion's close animate instead of jump-cutting — see the transition doc for how the pair works in general.",
     },
   ],
 };

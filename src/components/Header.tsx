@@ -1,12 +1,13 @@
 import { NavLink } from "react-router-dom";
 import ThemeToggle from "./ThemeToggle";
 import SearchPalette from "./SearchPalette";
-import { HomeIcon, ArticlesIcon, CodeIcon } from "./illustrations";
+import { HomeIcon, ArticlesIcon, CodeIcon, BracesIcon } from "./illustrations";
 
 const links = [
   { to: "/", label: "Home", end: true, Icon: HomeIcon },
   { to: "/articles", label: "Articles", end: false, Icon: ArticlesIcon },
   { to: "/css-docs", label: "CSS Docs", end: false, Icon: CodeIcon },
+  { to: "/js-docs", label: "JS Docs", end: false, Icon: BracesIcon },
 ];
 
 export default function Header() {

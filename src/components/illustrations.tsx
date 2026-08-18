@@ -168,6 +168,45 @@ export function CodeIcon({ className }: { className?: string }) {
   );
 }
 
+/** Curly braces around a small dot — used for the JS Docs nav item. */
+export function BracesIcon({ className }: { className?: string }) {
+  return (
+    <Svg viewBox="0 0 20 20" strokeWidth={1.6} className={className}>
+      <path d="M7.5 3c-1.5 0-2 .8-2 2v2c0 1-.4 1.5-1.5 1.5 1.1 0 1.5.5 1.5 1.5v2c0 1.2.5 2 2 2" strokeLinecap="round" strokeLinejoin="round" />
+      <path d="M12.5 3c1.5 0 2 .8 2 2v2c0 1 .4 1.5 1.5 1.5-1.1 0-1.5.5-1.5 1.5v2c0 1.2-.5 2-2 2" strokeLinecap="round" strokeLinejoin="round" />
+      <circle cx="10" cy="10" r="0.9" fill="currentColor" stroke="none" />
+    </Svg>
+  );
+}
+
+/** A paused (double-bar) marker beside a small dot mid-path — used for the generators JS doc. */
+export function PauseResumeIcon({ className }: { className?: string }) {
+  return (
+    <Svg viewBox="0 0 48 48" className={className}>
+      <path d="M6 24h14" strokeDasharray="2 5" opacity="0.5" />
+      <rect x="20" y="12" width="6" height="24" rx="1.5" fill="currentColor" stroke="none" opacity="0.55" />
+      <rect x="30" y="12" width="6" height="24" rx="1.5" fill="currentColor" stroke="none" opacity="0.55" />
+      <circle cx="42" cy="24" r="4" />
+    </Svg>
+  );
+}
+
+/** A branching recursive path with a small traffic-light stack — used for the generator-methods JS doc. */
+export function BranchLightIcon({ className }: { className?: string }) {
+  return (
+    <Svg viewBox="0 0 48 48" className={className}>
+      <path d="M6 14h6a4 4 0 0 1 4 4v0a4 4 0 0 0 4 4h4" />
+      <path d="M6 34h6a4 4 0 0 0 4-4v0a4 4 0 0 1 4-4h4" />
+      <circle cx="6" cy="14" r="2.5" fill="currentColor" stroke="none" />
+      <circle cx="6" cy="34" r="2.5" fill="currentColor" stroke="none" />
+      <rect x="26" y="14" width="10" height="20" rx="3" />
+      <circle cx="31" cy="19" r="1.6" fill="currentColor" stroke="none" opacity="0.85" />
+      <circle cx="31" cy="24" r="1.6" fill="currentColor" stroke="none" opacity="0.55" />
+      <circle cx="31" cy="29" r="1.6" fill="currentColor" stroke="none" opacity="0.3" />
+    </Svg>
+  );
+}
+
 /** A short right-pointing arrow — the "go" affordance on list cards and CTAs. */
 export function ArrowRightIcon({ className }: { className?: string }) {
   return (

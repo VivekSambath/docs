@@ -1,5 +1,6 @@
 import { articles, type DocSection } from "../content/articles";
 import { cssDocs } from "../content/cssDocs";
+import { jsDocs } from "../content/jsDocs";
 
 export type SearchResult = {
   slug: string;
@@ -43,7 +44,16 @@ function buildIndex(): SearchResult[] {
     haystack: [doc.title, doc.excerpt, headingText(doc.sections)].join(" ").toLowerCase(),
   }));
 
-  return [...fromArticles, ...fromCssDocs];
+  const fromJsDocs: SearchResult[] = jsDocs.map((doc) => ({
+    slug: doc.slug,
+    href: `/js-docs/${doc.slug}`,
+    title: doc.title,
+    category: doc.category,
+    excerpt: doc.excerpt,
+    haystack: [doc.title, doc.excerpt, headingText(doc.sections)].join(" ").toLowerCase(),
+  }));
+
+  return [...fromArticles, ...fromCssDocs, ...fromJsDocs];
 }
 
 let cached: SearchResult[] | undefined;

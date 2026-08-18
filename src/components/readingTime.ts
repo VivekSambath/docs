@@ -1,5 +1,6 @@
 import type { Article, DocSection } from "../content/articles";
 import type { CssDoc } from "../content/cssDocs";
+import type { JsDoc } from "../content/jsDocs";
 
 const WORDS_PER_MINUTE = 200;
 
@@ -24,6 +25,7 @@ function sectionWordCount(section: DocSection): number {
     case "demo":
     case "caniuse":
     case "mindmap":
+    case "playground":
       return 0;
   }
 }
@@ -47,5 +49,9 @@ export function readingTimeForArticle(article: Article): number {
 }
 
 export function readingTimeForCssDoc(doc: CssDoc): number {
+  return readingTimeFor(doc.sections);
+}
+
+export function readingTimeForJsDoc(doc: JsDoc): number {
   return readingTimeFor(doc.sections);
 }

@@ -52,6 +52,10 @@ export default function Home() {
               Browse CSS Docs
               <ArrowRightIcon className="h-4 w-4 transition-transform duration-150 ease-out group-hover:translate-x-1" />
             </LinkButton>
+            <LinkButton to="/js-docs" variant="outline" className="group">
+              Browse JS Docs
+              <ArrowRightIcon className="h-4 w-4 transition-transform duration-150 ease-out group-hover:translate-x-1" />
+            </LinkButton>
           </div>
         </div>
         <HeroIllustration className="hidden w-full max-w-xs shrink-0 text-divider sm:block md:w-80" />

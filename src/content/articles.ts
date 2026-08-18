@@ -109,6 +109,14 @@ export type DocCaniuse = {
   variant?: "embed" | "image" | "link";
 };
 
+export type DocPlayground = {
+  kind: "playground";
+  /** Seed source shown in the editor on first load. */
+  code: string;
+  height?: number;
+  caption?: string;
+};
+
 export type DocSection =
   | DocHeading
   | DocParagraph
@@ -120,7 +128,8 @@ export type DocSection =
   | DocTable
   | DocDemo
   | DocCaniuse
-  | DocMindMap;
+  | DocMindMap
+  | DocPlayground;
 
 export type RulesArticle = {
   kind: "rules";

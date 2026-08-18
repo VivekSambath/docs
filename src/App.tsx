@@ -7,6 +7,8 @@ const Articles = lazy(() => import("./pages/Articles"));
 const Article = lazy(() => import("./pages/Article"));
 const CssDocs = lazy(() => import("./pages/CssDocs"));
 const CssDoc = lazy(() => import("./pages/CssDoc"));
+const JsDocs = lazy(() => import("./pages/JsDocs"));
+const JsDoc = lazy(() => import("./pages/JsDoc"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 
 const router = createHashRouter([
@@ -18,6 +20,8 @@ const router = createHashRouter([
       { path: "/articles/:slug", element: <Article /> },
       { path: "/css-docs", element: <CssDocs /> },
       { path: "/css-docs/:slug", element: <CssDoc /> },
+      { path: "/js-docs", element: <JsDocs /> },
+      { path: "/js-docs/:slug", element: <JsDoc /> },
       { path: "*", element: <NotFound /> },
     ],
   },

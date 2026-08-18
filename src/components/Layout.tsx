@@ -1,3 +1,4 @@
+import { useEffect } from "react";
 import { Outlet, useLocation } from "react-router-dom";
 import Header from "./Header";
 import Footer from "./Footer";
@@ -6,6 +7,17 @@ import ScrollToTop from "./ScrollToTop";
 
 export default function Layout() {
   const location = useLocation();
+
+  // Hash-router navigation doesn't reset scroll position like a normal
+  // browser navigation would — without this, clicking a sidebar link while
+  // scrolled down lands mid-page on the new content instead of at its top.
+  // Skipped when the URL carries a heading hash (e.g. "#/js-docs/generators#syntax")
+  // so in-page anchor navigation isn't yanked back to the top.
+  useEffect(() => {
+    if (!location.hash) {
+      window.scrollTo({ top: 0 });
+    }
+  }, [location.pathname, location.hash]);
 
   return (
     <div className="mx-auto flex min-h-svh w-full max-w-360 flex-col border-x border-border">

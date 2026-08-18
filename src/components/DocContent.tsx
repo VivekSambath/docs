@@ -5,6 +5,7 @@ import { calloutAccent, calloutIcon, calloutLabel } from "./calloutStyles";
 import Highlighted from "./Highlighted";
 import { renderInline } from "./inline";
 import Reveal from "./Reveal";
+import GeneratorPlayground from "./GeneratorPlayground";
 
 function CopyButton({ text }: { text: string }) {
   const [copied, setCopied] = useState(false);
@@ -581,6 +582,9 @@ export default function DocContent({ sections }: { sections: DocSection[] }) {
 
           case "caniuse":
             return <CaniuseEmbed key={index} {...section} />;
+
+          case "playground":
+            return <GeneratorPlayground key={index} {...section} />;
 
           case "callout":
             return (

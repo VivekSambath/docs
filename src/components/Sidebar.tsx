@@ -52,20 +52,67 @@ function SectionLabel({ children }: { children: ReactNode }) {
 
 type HeadingItem = { id: string; text: string; level: number };
 
+// Mirrors SectionRail's scroll-spy: the active heading is whichever one is
+// the last to have crossed a trigger line near the top of the viewport —
+// i.e. the section the reader is currently inside.
+function useActiveHeading(headings: HeadingItem[]): string | undefined {
+  const ids = headings.map((heading) => heading.id).join("|");
+  const [activeId, setActiveId] = useState<string | undefined>(headings[0]?.id);
+
+  useEffect(() => {
+    const idList = ids ? ids.split("|") : [];
+    if (idList.length === 0) return;
+
+    const headingElements = idList
+      .map((id) => document.getElementById(id))
+      .filter((element): element is HTMLElement => element !== null);
+    if (headingElements.length === 0) return;
+
+    function updateActive() {
+      const line = window.innerHeight * 0.2;
+      let current = headingElements[0];
+      for (const element of headingElements) {
+        if (element.getBoundingClientRect().top <= line) {
+          current = element;
+        }
+      }
+      setActiveId(current.id);
+    }
+
+    updateActive();
+    window.addEventListener("scroll", updateActive, { passive: true });
+    window.addEventListener("resize", updateActive);
+    return () => {
+      window.removeEventListener("scroll", updateActive);
+      window.removeEventListener("resize", updateActive);
+    };
+  }, [ids]);
+
+  return activeId;
+}
+
 function HeadingList({ headings }: { headings: HeadingItem[] }) {
+  const activeId = useActiveHeading(headings);
+
   return (
     <ul className="sidebar-tree ml-3.75 flex flex-col gap-0.5 py-1">
-      {headings.map((heading) => (
-        <li key={heading.id} className={heading.level === 3 ? "pl-6" : "pl-3"}>
-          <a
-            href={`#${heading.id}`}
-            onClick={scrollToId(heading.id)}
-            className="block rounded-md px-2 py-1.5 text-[15px] leading-6 font-medium text-muted no-underline transition-colors duration-150 hover:text-fg"
-          >
-            {heading.text}
-          </a>
-        </li>
-      ))}
+      {headings.map((heading) => {
+        const isActive = heading.id === activeId;
+        return (
+          <li key={heading.id} className={heading.level === 3 ? "pl-6" : "pl-3"}>
+            <a
+              href={`#${heading.id}`}
+              onClick={scrollToId(heading.id)}
+              aria-current={isActive ? "location" : undefined}
+              className={`block rounded-md px-2 py-1.5 text-[15px] leading-6 font-medium no-underline transition-colors duration-150 ${
+                isActive ? "text-accent" : "text-muted hover:text-fg"
+              }`}
+            >
+              {heading.text}
+            </a>
+          </li>
+        );
+      })}
     </ul>
   );
 }
