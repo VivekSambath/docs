@@ -1,1 +1,0 @@
-import{C as e,d as t,m as n,y as r}from"./index-ATW9O-vt.js";var i={"design-principles":n,"full-bleed-css":t,"reading-disabilities":r,"touch-events":e};export{i as t};

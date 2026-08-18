@@ -1,0 +1,1 @@
+import{C as e,D as t,_ as n,p as r}from"./index-TpuR6CEL.js";var i={"design-principles":n,"full-bleed-css":r,"reading-disabilities":e,"touch-events":t};export{i as t};
