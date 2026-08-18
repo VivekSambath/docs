@@ -1,22 +1,22 @@
 import type { JsDoc } from "../jsDocs";
 
 const stackExample = `function* pauseDemo() {
-  console.log("1. before first yield");
+  console.log("2. before first yield");
   yield "A";
-  console.log("3. resumed after first yield");
+  console.log("5. resumed after first yield");
   yield "B";
-  console.log("5. resumed after second yield");
+  console.log("8. resumed after second yield");
 }
 
 const gen = pauseDemo();
 
-console.log("2. call site: gen.next() pushes pauseDemo onto the stack");
+console.log("1. call site: gen.next() pushes pauseDemo onto the stack");
 console.log(gen.next()); // runs to "yield A", pops back off the stack
 
 console.log("4. call site: gen.next() pushes pauseDemo back onto the stack");
 console.log(gen.next()); // resumes after A, runs to "yield B", pops off again
 
-console.log("6. call site: gen.next() resumes one last time");
+console.log("7. call site: gen.next() resumes one last time");
 console.log(gen.next()); // resumes after B, runs off the end, pops off for good`;
 
 const basicExample = `function* sales() {
@@ -124,7 +124,7 @@ export const generatorsDoc: JsDoc = {
     },
     {
       kind: "paragraph",
-      text: "Think of it like a call stack that can be popped off mid-function and pushed back on later: each `.next()` call pushes the generator's frame back onto the stack, runs it until the next `yield`, then pops it back off — with all its local variables intact for the next push. Hit **Run** below and read the numbered log in order: steps 1, 3, and 5 happen *inside* `pauseDemo`, steps 2, 4, and 6 happen at the call site, and they interleave because the function's frame keeps leaving and rejoining the stack.",
+      text: "Think of it like a call stack that can be popped off mid-function and pushed back on later: each `.next()` call pushes the generator's frame back onto the stack, runs it until the next `yield`, then pops it back off — with all its local variables intact for the next push. Hit **Run** below and read the numbered log in order: steps 1, 4, and 7 are logged at the call site *before* each `.next()` call, steps 2, 5, and 8 are logged *inside* `pauseDemo` once that `.next()` call pushes its frame back onto the stack, and the returned `{ value, done }` object lands right after.",
     },
     {
       kind: "playground",

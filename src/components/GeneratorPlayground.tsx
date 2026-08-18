@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState, type KeyboardEvent, type UIEvent } from "react";
+import { useCallback, useEffect, useRef, useState, type KeyboardEvent, type UIEvent } from "react";
 import type { DocSection } from "../content/articles";
 import { highlightForEditor } from "./jsTokenizer";
 import { run, type OutputLine, type RunHandle } from "./playgroundEngine";
@@ -44,14 +44,18 @@ function OutputPanel({ lines }: { lines: OutputLine[] }) {
  * returned generator or async generator unrolls step by step, live for the
  * async case. See playgroundEngine.ts for the execution semantics.
  */
-export default function GeneratorPlayground({ code, height = 260, caption }: Extract<DocSection, { kind: "playground" }>) {
+export default function GeneratorPlayground({ code, height = 420, caption }: Extract<DocSection, { kind: "playground" }>) {
   const [source, setSource] = useState(code);
   const [lines, setLines] = useState<OutputLine[]>([]);
   const [running, setRunning] = useState(false);
+  const [layout, setLayout] = useState<"stacked" | "side-by-side">("stacked");
+  const [splitPercent, setSplitPercent] = useState(55);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const preRef = useRef<HTMLPreElement>(null);
   const gutterRef = useRef<HTMLDivElement>(null);
   const handleRef = useRef<RunHandle | null>(null);
+  const paneRef = useRef<HTMLDivElement>(null);
+  const draggingRef = useRef(false);
 
   useEffect(() => {
     return () => handleRef.current?.stop();
@@ -107,23 +111,60 @@ export default function GeneratorPlayground({ code, height = 260, caption }: Ext
     setLines([]);
   }
 
+  const handleDrag = useCallback(
+    (event: PointerEvent) => {
+      if (!draggingRef.current || !paneRef.current) return;
+      const rect = paneRef.current.getBoundingClientRect();
+      const percent =
+        layout === "side-by-side"
+          ? ((event.clientX - rect.left) / rect.width) * 100
+          : ((event.clientY - rect.top) / rect.height) * 100;
+      setSplitPercent(Math.min(80, Math.max(20, percent)));
+    },
+    [layout],
+  );
+
+  useEffect(() => {
+    function stopDrag() {
+      draggingRef.current = false;
+    }
+    window.addEventListener("pointermove", handleDrag);
+    window.addEventListener("pointerup", stopDrag);
+    return () => {
+      window.removeEventListener("pointermove", handleDrag);
+      window.removeEventListener("pointerup", stopDrag);
+    };
+  }, [handleDrag]);
+
+  function startDrag() {
+    draggingRef.current = true;
+  }
+
   return (
     <figure className="mt-8">
       <div className="overflow-hidden rounded-md border border-border">
-        <div className="flex items-center justify-between border-b border-border bg-surface px-4 py-2 text-xs text-muted">
-          <span className="font-mono uppercase tracking-wide">JavaScript — editable</span>
+        <div className="flex flex-wrap items-center justify-between gap-2 border-b border-border bg-surface px-4 py-2.5 text-sm text-muted">
+          <span className="font-mono text-xs uppercase tracking-wide">JavaScript — editable</span>
           <div className="flex items-center gap-2">
             <button
               type="button"
+              onClick={() => setLayout(layout === "stacked" ? "side-by-side" : "stacked")}
+              title={layout === "stacked" ? "Switch to side-by-side layout" : "Switch to stacked layout"}
+              className="rounded-md border border-border px-3 py-1.5 font-semibold text-fg transition-colors duration-150 hover:border-accent hover:text-accent"
+            >
+              {layout === "stacked" ? "⬍ Stacked" : "⬌ Side-by-side"}
+            </button>
+            <button
+              type="button"
               onClick={handleReset}
-              className="rounded border border-transparent px-1.5 py-0.5 font-medium transition-colors duration-150 hover:border-border hover:text-fg"
+              className="rounded-md border border-border px-3 py-1.5 font-semibold text-fg transition-colors duration-150 hover:border-accent hover:text-accent"
             >
               ↺ Reset
             </button>
             <button
               type="button"
               onClick={handleClear}
-              className="rounded border border-transparent px-1.5 py-0.5 font-medium transition-colors duration-150 hover:border-border hover:text-fg"
+              className="rounded-md border border-border px-3 py-1.5 font-semibold text-fg transition-colors duration-150 hover:border-accent hover:text-accent"
             >
               Clear output
             </button>
@@ -131,7 +172,7 @@ export default function GeneratorPlayground({ code, height = 260, caption }: Ext
               <button
                 type="button"
                 onClick={handleStop}
-                className="rounded-md bg-red-600 px-3 py-1 font-semibold text-white transition-colors duration-150 hover:bg-red-700"
+                className="rounded-md bg-red-600 px-4 py-1.5 font-semibold text-white transition-colors duration-150 hover:bg-red-700"
               >
                 ■ Stop
               </button>
@@ -139,7 +180,7 @@ export default function GeneratorPlayground({ code, height = 260, caption }: Ext
               <button
                 type="button"
                 onClick={handleRun}
-                className="rounded-md bg-accent px-3 py-1 font-semibold text-fg-invert transition-colors duration-150 hover:bg-accent-hover"
+                className="rounded-md bg-accent px-4 py-1.5 font-semibold text-fg-invert transition-colors duration-150 hover:bg-accent-hover"
               >
                 ▶ Run
               </button>
@@ -147,45 +188,64 @@ export default function GeneratorPlayground({ code, height = 260, caption }: Ext
           </div>
         </div>
 
-        <div className="relative flex bg-bg font-mono text-sm" style={{ height }}>
+        <div
+          ref={paneRef}
+          className={`relative flex bg-bg font-mono text-sm ${layout === "side-by-side" ? "flex-row" : "flex-col"}`}
+          style={{ height }}
+        >
           <div
-            ref={gutterRef}
-            aria-hidden="true"
-            className="select-none overflow-hidden border-r border-border px-3 py-3 text-right text-muted"
+            className="relative flex min-h-0 min-w-0"
+            style={layout === "side-by-side" ? { width: `${splitPercent}%` } : { flex: `0 0 ${splitPercent}%` }}
           >
-            {Array.from({ length: lineCount }, (_, i) => (
-              <div key={i}>{i + 1}</div>
-            ))}
-          </div>
-          <div className="relative min-w-0 grow">
-            <pre
-              ref={preRef}
+            <div
+              ref={gutterRef}
               aria-hidden="true"
-              className="pg-editor-layer pointer-events-none absolute inset-0 overflow-auto p-3 text-body"
+              className="select-none overflow-hidden border-r border-border px-3 py-3 text-right text-muted"
             >
-              <code dangerouslySetInnerHTML={{ __html: highlightForEditor(source) }} />
-            </pre>
-            <textarea
-              ref={textareaRef}
-              value={source}
-              onChange={(event) => setSource(event.target.value)}
-              onScroll={syncScroll}
-              onKeyDown={handleKeyDown}
-              spellCheck={false}
-              autoCapitalize="off"
-              autoCorrect="off"
-              className="pg-editor-textarea absolute inset-0 h-full w-full resize-none overflow-auto p-3 focus:outline-none"
-            />
+              {Array.from({ length: lineCount }, (_, i) => (
+                <div key={i}>{i + 1}</div>
+              ))}
+            </div>
+            <div className="relative min-w-0 grow">
+              <pre
+                ref={preRef}
+                aria-hidden="true"
+                className="pg-editor-layer pointer-events-none absolute inset-0 overflow-auto p-3 text-body"
+              >
+                <code dangerouslySetInnerHTML={{ __html: highlightForEditor(source) }} />
+              </pre>
+              <textarea
+                ref={textareaRef}
+                value={source}
+                onChange={(event) => setSource(event.target.value)}
+                onScroll={syncScroll}
+                onKeyDown={handleKeyDown}
+                spellCheck={false}
+                autoCapitalize="off"
+                autoCorrect="off"
+                className="pg-editor-textarea absolute inset-0 h-full w-full resize-none overflow-auto p-3 focus:outline-none"
+              />
+            </div>
           </div>
-        </div>
 
-        <div className="border-t border-border bg-surface/60">
-          <div className="flex items-center justify-between border-b border-border px-4 py-1.5 text-[11px] font-semibold tracking-wide text-muted uppercase">
-            <span>Output</span>
-            {running && <span className="text-accent normal-case">running…</span>}
-          </div>
-          <div className="max-h-64 overflow-auto">
-            <OutputPanel lines={lines} />
+          <div
+            onPointerDown={startDrag}
+            role="separator"
+            aria-orientation={layout === "side-by-side" ? "vertical" : "horizontal"}
+            aria-label="Resize code and output panes"
+            className={`shrink-0 touch-none bg-border transition-colors duration-150 hover:bg-accent ${
+              layout === "side-by-side" ? "w-1 cursor-col-resize" : "h-1 cursor-row-resize"
+            }`}
+          />
+
+          <div className="flex min-h-0 min-w-0 grow flex-col border-border bg-surface/60">
+            <div className="flex items-center justify-between border-b border-border px-4 py-1.5 text-[11px] font-semibold tracking-wide text-muted uppercase">
+              <span>Output</span>
+              {running && <span className="text-accent normal-case">running…</span>}
+            </div>
+            <div className="min-h-0 grow overflow-auto">
+              <OutputPanel lines={lines} />
+            </div>
           </div>
         </div>
       </div>
