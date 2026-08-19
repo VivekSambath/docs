@@ -1,1 +1,0 @@
-import{E as e,O as t,T as n,v as r}from"./index-A6Z-52Mq.js";var i={"contrast-color":n,transitions:t,"animation-timeline":e,"animating-details":r};export{i as t};

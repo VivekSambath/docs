@@ -1,1 +1,0 @@
-import{C as e,D as t,_ as n,p as r}from"./index-A6Z-52Mq.js";var i={"design-principles":n,"full-bleed-css":r,"reading-disabilities":e,"touch-events":t};export{i as t};
