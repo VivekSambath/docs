@@ -6,7 +6,16 @@
 
 export type OutputLine = {
   kind: "log" | "error" | "yield" | "return" | "meta";
+  /** The value itself, rendered in the kind's color. */
   text: string;
+  /**
+   * Short tag rendered as its own chip *before* the value (`yield 3`,
+   * `return`, `throw`). Kept out of `text` so the panel can style label and
+   * value independently instead of coloring one pre-baked string.
+   */
+  label?: string;
+  /** Generator name, when several are traced at once — shown as a dim prefix. */
+  source?: string;
 };
 
 export function isGenerator(value: unknown): value is Generator {
@@ -29,7 +38,10 @@ export function isAsyncGenerator(value: unknown): value is AsyncGenerator {
 
 export function format(value: unknown): string {
   if (typeof value === "string") return value;
-  if (value instanceof Error) return value.stack || `${value.name}: ${value.message}`;
+  // Deliberately `name: message`, never `.stack`: the stack of an error thrown
+  // by eval'd source is mostly this engine's own frames plus absolute file
+  // paths, which is noise the reader can neither act on nor recognise.
+  if (value instanceof Error) return `${value.name}: ${value.message}`;
   try {
     return JSON.stringify(value, (_key, v) => (typeof v === "bigint" ? `${v.toString()}n` : v), 2) ?? String(value);
   } catch {
@@ -39,10 +51,15 @@ export function format(value: unknown): string {
 
 const STEP_LIMIT = 1000;
 
+/** Splits a thrown value into the chip label (`TypeError`) and the message. */
+function describeThrown(err: unknown): { label: string; text: string } {
+  if (err instanceof Error) return { label: err.name || "Error", text: err.message || String(err) };
+  return { label: "throw", text: format(err) };
+}
+
 /** Unrolls a generator step by step into output lines, capped at `limit` iterations. */
 export function unrollGenerator(gen: Generator, limit = STEP_LIMIT, label?: string): OutputLine[] {
   const lines: OutputLine[] = [];
-  const prefix = label ? `[${label}] ` : "";
   let count = 0;
 
   for (; count < limit; count++) {
@@ -50,21 +67,21 @@ export function unrollGenerator(gen: Generator, limit = STEP_LIMIT, label?: stri
     try {
       result = gen.next();
     } catch (err) {
-      lines.push({ kind: "error", text: `${prefix}threw: ${format(err)}` });
+      lines.push({ kind: "error", source: label, ...describeThrown(err) });
       return lines;
     }
 
     if (result.done) {
       if (result.value !== undefined) {
-        lines.push({ kind: "return", text: `${prefix}return: ${format(result.value)}` });
+        lines.push({ kind: "return", label: "return", source: label, text: format(result.value) });
       }
       return lines;
     }
 
-    lines.push({ kind: "yield", text: `${prefix}yield #${count + 1}: ${format(result.value)}` });
+    lines.push({ kind: "yield", label: `yield ${count + 1}`, source: label, text: format(result.value) });
   }
 
-  lines.push({ kind: "meta", text: `${prefix}... stopped after ${limit} yields (generator still running)` });
+  lines.push({ kind: "meta", source: label, text: `paused after ${limit} yields — generator is still running` });
   return lines;
 }
 
@@ -84,13 +101,12 @@ export async function unrollAsyncGenerator(
   limit = STEP_LIMIT,
   label?: string,
 ): Promise<void> {
-  const prefix = label ? `[${label}] ` : "";
   let count = 0;
 
   for (; count < limit; count++) {
     if (shouldStop()) {
       await gen.return(undefined);
-      onLine({ kind: "meta", text: `${prefix}stopped` });
+      onLine({ kind: "meta", source: label, text: "stopped" });
       return;
     }
 
@@ -98,21 +114,21 @@ export async function unrollAsyncGenerator(
     try {
       result = await gen.next();
     } catch (err) {
-      onLine({ kind: "error", text: `${prefix}threw: ${format(err)}` });
+      onLine({ kind: "error", source: label, ...describeThrown(err) });
       return;
     }
 
     if (result.done) {
       if (result.value !== undefined) {
-        onLine({ kind: "return", text: `${prefix}return: ${format(result.value)}` });
+        onLine({ kind: "return", label: "return", source: label, text: format(result.value) });
       }
       return;
     }
 
-    onLine({ kind: "yield", text: `${prefix}yield #${count + 1}: ${format(result.value)}` });
+    onLine({ kind: "yield", label: `yield ${count + 1}`, source: label, text: format(result.value) });
   }
 
-  onLine({ kind: "meta", text: `${prefix}... stopped after ${limit} yields (generator still running)` });
+  onLine({ kind: "meta", source: label, text: `paused after ${limit} yields — generator is still running` });
 }
 
 export type RunHandle = {
@@ -158,7 +174,7 @@ export function run(source: string, onLine: (line: OutputLine) => void): RunHand
       return;
     }
     if (!isGenerator(gen)) {
-      onLine({ kind: "error", text: "trace() was called with something that isn't a generator" });
+      onLine({ kind: "error", label: "trace", text: "argument is not a generator" });
       return;
     }
     unrollGenerator(gen, STEP_LIMIT, label).forEach(onLine);
@@ -177,22 +193,21 @@ export function run(source: string, onLine: (line: OutputLine) => void): RunHand
       })();
 
       if (isAsyncGenerator(result)) {
-        onLine({ kind: "meta", text: "(returned an async generator — unrolling live)" });
+        onLine({ kind: "meta", text: "async generator returned — unrolling live" });
         await unrollAsyncGenerator(result, onLine, () => stopped);
       } else if (isGenerator(result)) {
-        onLine({ kind: "meta", text: "(returned a generator — unrolling every step)" });
+        onLine({ kind: "meta", text: "generator returned — unrolling every step" });
         unrollGenerator(result, STEP_LIMIT).forEach(onLine);
       } else if (result instanceof Promise) {
         const resolved = await result;
         if (resolved !== undefined) {
-          onLine({ kind: "return", text: `=> ${format(resolved)}` });
+          onLine({ kind: "return", label: "result", text: format(resolved) });
         }
       } else if (result !== undefined) {
-        onLine({ kind: "return", text: `=> ${format(result)}` });
+        onLine({ kind: "return", label: "result", text: format(result) });
       }
     } catch (err) {
-      const e = err as Error;
-      onLine({ kind: "error", text: `${e.name ?? "Error"}: ${e.message ?? String(err)}` });
+      onLine({ kind: "error", ...describeThrown(err) });
     }
   })();
 

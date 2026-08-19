@@ -63,6 +63,16 @@
   --color-tok-num: light-dark(#b2591e, #b5cea8);
   --color-tok-fn: light-dark(#8a6d00, #dcdcaa);
   --color-tok-class: light-dark(#0e7d73, #4ec9b0);
+
+  /* Playground console colors (GeneratorPlayground.tsx). Each output kind
+     gets a hue from the same restrained family as the editor tokens above —
+     deliberately NOT raw Tailwind palette classes like `text-red-600`, which
+     ignore `color-scheme` and read as muddy against the black theme. Light
+     values are darkened for contrast on --color-bg; dark values are
+     desaturated so no single line glows against near-black. */
+  --color-out-yield: light-dark(#0e7d73, #4ec9b0);
+  --color-out-return: light-dark(#8a5a00, #e2b578);
+  --color-out-error: light-dark(#c02526, #ff9d9d);
 }
 
 @layer base {
@@ -273,4 +283,21 @@
   .tok-num { color: var(--color-tok-num); }
   .tok-fn { color: var(--color-tok-fn); }
   .tok-class { color: var(--color-tok-class); }
+
+  /* Console line chips: one shared shape recolored per output kind through
+     the --pg-kind variable, so a chip's tint always matches the value beside
+     it and adding a kind means adding one line below, not a new rule. */
+  .pg-chip {
+    color: var(--pg-kind);
+    background-color: color-mix(in srgb, var(--pg-kind) 12%, transparent);
+    border: 1px solid color-mix(in srgb, var(--pg-kind) 28%, transparent);
+  }
+
+  .pg-value { color: var(--pg-kind); }
+
+  .pg-line-yield { --pg-kind: var(--color-out-yield); }
+  .pg-line-return { --pg-kind: var(--color-out-return); }
+  .pg-line-error { --pg-kind: var(--color-out-error); }
+  .pg-line-log { --pg-kind: var(--color-body); }
+  .pg-line-meta { --pg-kind: var(--color-muted); }
 }
