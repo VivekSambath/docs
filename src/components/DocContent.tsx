@@ -1,11 +1,12 @@
-import { useMemo, useState } from "react";
-import type { DocDemoPaneEditable, DocSection } from "../content/articles";
+import { useMemo, useState, type ReactNode } from "react";
+import type { DocDemoPaneEditable, DocListIcon, DocSection } from "../content/articles";
 import { slugify } from "./docToc";
 import { calloutAccent, calloutIcon, calloutLabel } from "./calloutStyles";
 import Highlighted from "./Highlighted";
 import { renderInline } from "./inline";
 import Reveal from "./Reveal";
 import GeneratorPlayground from "./GeneratorPlayground";
+import SchedulerDemo from "./SchedulerDemo";
 
 function CopyButton({ text }: { text: string }) {
   const [copied, setCopied] = useState(false);
@@ -130,6 +131,123 @@ const demoStatusLabel: Record<"bad" | "good", string> = {
   bad: "✕ Bad",
   good: "✓ Good",
 };
+
+function ListIcon({ icon }: { icon: DocListIcon }) {
+  const common = {
+    fill: "none",
+    stroke: "currentColor",
+    strokeWidth: 1.7,
+    strokeLinecap: "round" as const,
+    strokeLinejoin: "round" as const,
+  };
+
+  const paths: Record<DocListIcon, ReactNode> = {
+    priority: (
+      <>
+        <path d="M3 11.5h4.5" {...common} />
+        <path d="M3 7.5h7" {...common} />
+        <path d="M3 3.5h10" {...common} />
+        <path d="m11 11 2 2 3-4" {...common} />
+      </>
+    ),
+    responsive: (
+      <>
+        <path d="M8 2.5a5.5 5.5 0 1 0 5.5 5.5" {...common} />
+        <path d="M8 8 12.5 4" {...common} />
+        <path d="M11.5 2.5h3v3" {...common} />
+      </>
+    ),
+    global: (
+      <>
+        <circle cx="8" cy="8" r="5.5" {...common} />
+        <path d="M2.5 8h11" {...common} />
+        <path d="M8 2.5c1.5 1.5 2.2 3.3 2.2 5.5S9.5 12 8 13.5" {...common} />
+        <path d="M8 2.5C6.5 4 5.8 5.8 5.8 8s.7 4 2.2 5.5" {...common} />
+      </>
+    ),
+    task: (
+      <>
+        <rect x="3" y="3" width="10" height="10" rx="2" {...common} />
+        <path d="M5.5 6h5" {...common} />
+        <path d="M5.5 9h3" {...common} />
+      </>
+    ),
+    pause: (
+      <>
+        <path d="M5.5 3.5v9" {...common} />
+        <path d="M10.5 3.5v9" {...common} />
+        <path d="M3 13.5h10" {...common} />
+      </>
+    ),
+    support: (
+      <>
+        <path d="M8 2.5 13 5v3.5c0 3-2 5-5 5-3-1-5-3-5-5V5l5-2.5Z" {...common} />
+        <path d="m5.8 8.2 1.4 1.4 3-3.2" {...common} />
+      </>
+    ),
+    search: (
+      <>
+        <circle cx="7" cy="7" r="4" {...common} />
+        <path d="m10 10 3.5 3.5" {...common} />
+      </>
+    ),
+    split: (
+      <>
+        <path d="M2.5 8h3" {...common} />
+        <path d="M5.5 8 8 4.5h5.5" {...common} />
+        <path d="M5.5 8 8 11.5h5.5" {...common} />
+        <path d="m11.5 2.8 1.8 1.7-1.8 1.7" {...common} />
+        <path d="m11.5 9.8 1.8 1.7-1.8 1.7" {...common} />
+      </>
+    ),
+    label: (
+      <>
+        <path d="M2.5 6.2V3.5a1 1 0 0 1 1-1h2.7c.3 0 .5.1.7.3l6 6a1 1 0 0 1 0 1.4l-3 3a1 1 0 0 1-1.4 0l-6-6a1 1 0 0 1-.3-.7Z" {...common} />
+        <circle cx="5.4" cy="5.4" r="0.9" {...common} />
+      </>
+    ),
+    shield: (
+      <>
+        <path d="M8 2.2 13 4.3v3.4c0 3-2 5.3-5 6.1-3-.8-5-3.1-5-6.1V4.3L8 2.2Z" {...common} />
+        <path d="M8 5.5v3" {...common} />
+        <path d="M8 10.6h.01" {...common} />
+      </>
+    ),
+    clock: (
+      <>
+        <circle cx="8" cy="8" r="5.5" {...common} />
+        <path d="M8 4.8V8l2.2 1.6" {...common} />
+      </>
+    ),
+    cursor: (
+      <>
+        <path d="M4 2.6 12 8l-3.4.9-1.6 3.4L4 2.6Z" {...common} />
+        <path d="m9 9.4 3.4 3.4" {...common} />
+      </>
+    ),
+    eye: (
+      <>
+        <path d="M1.8 8s2.4-4 6.2-4 6.2 4 6.2 4-2.4 4-6.2 4-6.2-4-6.2-4Z" {...common} />
+        <circle cx="8" cy="8" r="1.8" {...common} />
+      </>
+    ),
+    cancel: (
+      <>
+        <circle cx="8" cy="8" r="5.5" {...common} />
+        <path d="m5.9 5.9 4.2 4.2" {...common} />
+        <path d="m10.1 5.9-4.2 4.2" {...common} />
+      </>
+    ),
+  };
+
+  return (
+    <span className="mt-0.5 inline-flex h-5 w-5 shrink-0 items-center justify-center rounded border border-border bg-surface text-accent">
+      <svg viewBox="0 0 16 16" className="h-3.5 w-3.5" aria-hidden="true">
+        {paths[icon]}
+      </svg>
+    </span>
+  );
+}
 
 function DemoBlock({ panes, toggle, height = 220, caption }: Extract<DocSection, { kind: "demo" }>) {
   const [on, setOn] = useState(toggle?.defaultOn ?? true);
@@ -586,6 +704,9 @@ export default function DocContent({ sections }: { sections: DocSection[] }) {
           case "playground":
             return <GeneratorPlayground key={index} {...section} />;
 
+          case "scheduler-demo":
+            return <SchedulerDemo key={index} {...section} />;
+
           case "callout":
             return (
               <div
@@ -626,7 +747,11 @@ export default function DocContent({ sections }: { sections: DocSection[] }) {
                     key={itemIndex}
                     className="flex gap-3 text-body"
                   >
-                    <span className="text-muted">&bull;</span>
+                    {section.icons?.[itemIndex] ? (
+                      <ListIcon icon={section.icons[itemIndex]} />
+                    ) : (
+                      <span className="text-muted">&bull;</span>
+                    )}
                     <span>{renderInline(item)}</span>
                   </li>
                 ))}

@@ -28,7 +28,27 @@ export type DocCallout = {
   variant: "tip" | "note" | "warning";
   text: string;
 };
-export type DocList = { kind: "list"; items: string[]; ordered?: boolean };
+export type DocListIcon =
+  | "priority"
+  | "responsive"
+  | "global"
+  | "task"
+  | "pause"
+  | "support"
+  | "search"
+  | "split"
+  | "label"
+  | "shield"
+  | "clock"
+  | "cursor"
+  | "eye"
+  | "cancel";
+export type DocList = {
+  kind: "list";
+  items: string[];
+  ordered?: boolean;
+  icons?: DocListIcon[];
+};
 export type DocComparisonSide = {
   label: string;
   code?: string;
@@ -117,6 +137,26 @@ export type DocPlayground = {
   caption?: string;
 };
 
+/**
+ * A live, script-running demo for the Scheduler API doc. Unlike `demo`
+ * (script-less CSS iframes) these run real JS on the page's own main thread —
+ * that's the point: the blocking variants genuinely block, and input delay is
+ * measured from real `event.timeStamp` values. Rendered by SchedulerDemo.tsx.
+ *
+ * `parallel` is the exception: an animated timeline diagram, not a benchmark.
+ * It contrasts true parallelism (two threads at once) with the interleaving
+ * `yield()` actually gives you, so nothing about it is measured.
+ *
+ * `priority` runs real `postTask()` calls (queued worst-first) to show run
+ * order diverging from queue order; where `postTask` is unavailable it
+ * emulates the ordering and says so in its footer.
+ */
+export type DocSchedulerDemo = {
+  kind: "scheduler-demo";
+  demo: "click" | "search" | "table" | "parallel" | "priority";
+  caption?: string;
+};
+
 export type DocSection =
   | DocHeading
   | DocParagraph
@@ -129,7 +169,8 @@ export type DocSection =
   | DocDemo
   | DocCaniuse
   | DocMindMap
-  | DocPlayground;
+  | DocPlayground
+  | DocSchedulerDemo;
 
 export type RulesArticle = {
   kind: "rules";

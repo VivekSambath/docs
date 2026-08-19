@@ -26,6 +26,7 @@ function sectionWordCount(section: DocSection): number {
     case "caniuse":
     case "mindmap":
     case "playground":
+    case "scheduler-demo":
       return 0;
   }
 }

@@ -12,13 +12,14 @@ import type { ReactNode } from "react";
  *                     to remember from a section
  *   __text__        → accent underline — important phrases that aren't links
  *   [label](https…) → external link, accent + underline, opens in a new tab
+ *   [label](#/path) → in-app link to another page, same tab (hash router)
  *
  * Tokens don't nest. Strings without any marker char return unchanged, so
  * existing content pays no cost.
  */
 
 const INLINE_TOKEN =
-  /\*\*(.+?)\*\*|`([^`]+)`|==(.+?)==|__(.+?)__|\[([^\]]+)\]\((https?:\/\/[^\s)]+)\)/g;
+  /\*\*(.+?)\*\*|`([^`]+)`|==(.+?)==|__(.+?)__|\[([^\]]+)\]\(((?:https?:\/\/|#\/)[^\s)]+)\)/g;
 
 export function renderInline(text: string): ReactNode {
   if (!/[*`=_[]/.test(text)) return text;
@@ -61,12 +62,16 @@ export function renderInline(text: string): ReactNode {
         </span>,
       );
     } else if (linkLabel !== undefined) {
+      // In-app hash links stay in this tab; only real external URLs open a new
+      // one. `target`/`rel` are omitted entirely for internal links so they
+      // behave like ordinary navigation under the hash router.
+      const isInternal = linkHref?.startsWith("#/");
       nodes.push(
         <a
           key={index}
           href={linkHref}
-          target="_blank"
-          rel="noreferrer"
+          target={isInternal ? undefined : "_blank"}
+          rel={isInternal ? undefined : "noreferrer"}
           className="text-accent underline decoration-accent/40 underline-offset-2 transition-colors duration-150 hover:text-accent-hover hover:decoration-accent-hover"
         >
           {linkLabel}
