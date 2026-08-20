@@ -90,14 +90,50 @@ export const schedulerApiDoc: JsDoc = {
       items: [
         "**You go to the back of the line.** Your next chunk queues *behind* everything that arrived while you worked — so a long job can be ==starved== and finish far later than you expect.",
         "**Every job looks equally urgent.** `setTimeout` has ==no concept of priority==. A click handler and an analytics ping are the same to it, so you can't say which should go first.",
-        "**Your `0` stops meaning `0`.** Once a timer chain is ==five deep==, the browser quietly clamps every delay under 4ms *up* to 4ms — and a chunking loop is one long chain.",
+        "**Your `0` stops meaning `0`.** After a few rounds the browser ==silently makes each pause 4ms long==, even though you asked for none. Worth its own section, below.",
+      ],
+    },
+
+    { kind: "heading", text: "The third one, properly: your 0 becomes 4ms", level: 3 },
+    {
+      kind: "paragraph",
+      text: "You're at a coffee counter. You order, then ==step aside== so the person behind you can go — polite, costs nothing. But the shop has a rule:",
+    },
+    {
+      kind: "callout",
+      variant: "note",
+      text: "*\"Rejoin this queue more than five times and you wait ==4 seconds== before we serve you again.\"* It exists to stop one person cycling through forever and monopolising the barista.",
+    },
+    {
+      kind: "list",
+      icons: ["clock", "split", "priority"],
+      items: [
+        "Step aside ==once or twice==? No penalty. You barely notice the rule.",
+        "But split your order into ==1,000 tiny ones== — one coffee, requeue, one coffee, requeue — and you pay that 4-second wait **996 times**.",
+        "You've now spent ==over an hour standing still==, on top of however long the coffee actually took.",
+      ],
+    },
+    {
+      kind: "paragraph",
+      text: "Browsers do exactly this. `setTimeout` inside `setTimeout` inside `setTimeout` is a ==chain==, and once that chain is **five deep**, the spec says any delay under 4ms gets rounded ==up== to 4ms. It's a deliberate old defence against runaway `setTimeout(0)` loops pegging the CPU — and a chunking loop is one long chain.",
+    },
+    {
+      kind: "table",
+      headers: ["At the counter", "In the browser"],
+      rows: [
+        ["Stepping aside to let others order", "`setTimeout(fn, 0)`"],
+        ["Rejoining the queue again and again", "Each chunk scheduling the next one"],
+        ["\"After your 5th time, wait 4 seconds\"", "After nesting level 5, `0` becomes `4ms`"],
+        ["Splitting into 1,000 tiny orders", "Chunking 100,000 items, 100 at a time"],
       ],
     },
     {
       kind: "callout",
       variant: "warning",
-      text: "That last one is worth doing the arithmetic on. Split 100,000 items into chunks of 100 and you make ==1,000 hops==; all but the first four cost 4ms of nothing. That's **four seconds** where neither your work nor the browser runs — added on top of the real work, and it gets ==worse the more finely you chunk==. `scheduler.yield()` has no such clamp.",
+      text: "So do the arithmetic: 100,000 items in chunks of 100 is ==1,000 hops==, and all but the first four cost 4ms of nothing. **Four seconds** where neither your work nor the browser runs. And note which way it cuts — ==the more politely you chunk, the more you pay==. `scheduler.yield()` has no such clamp.",
     },
+
+    { kind: "heading", text: "Old way vs new way", level: 3 },
     {
       kind: "table",
       headers: ["", "`setTimeout(fn, 0)`", "Scheduler API"],
