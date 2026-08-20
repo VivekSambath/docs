@@ -90,8 +90,13 @@ export const schedulerApiDoc: JsDoc = {
       items: [
         "**You go to the back of the line.** Your next chunk queues *behind* everything that arrived while you worked — so a long job can be ==starved== and finish far later than you expect.",
         "**Every job looks equally urgent.** `setTimeout` has ==no concept of priority==. A click handler and an analytics ping are the same to it, so you can't say which should go first.",
-        "**The 4ms floor.** After a few nested timers the browser ==clamps `0` to about 4ms==. Do that 1,000 times and you've added four seconds of pure waiting.",
+        "**Your `0` stops meaning `0`.** Once a timer chain is ==five deep==, the browser quietly clamps every delay under 4ms *up* to 4ms — and a chunking loop is one long chain.",
       ],
+    },
+    {
+      kind: "callout",
+      variant: "warning",
+      text: "That last one is worth doing the arithmetic on. Split 100,000 items into chunks of 100 and you make ==1,000 hops==; all but the first four cost 4ms of nothing. That's **four seconds** where neither your work nor the browser runs — added on top of the real work, and it gets ==worse the more finely you chunk==. `scheduler.yield()` has no such clamp.",
     },
     {
       kind: "table",
