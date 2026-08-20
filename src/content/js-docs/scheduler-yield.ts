@@ -88,33 +88,36 @@ function postTask(callback, { priority = "user-visible" } = {}) {
   });
 }`;
 
-const yieldPlayground = `// scheduler.yield() isn't available everywhere yet, so this runs the same
-// fallback the demos on this page use. Watch the timestamps: each chunk of
-// work is followed by a break where the browser could paint or handle input.
+const yieldPlayground = `// Rendering 500 rows without freezing the page.
+// Change CHUNK, press Run, and watch how often the browser gets a turn.
 
-async function yieldToMain() {
-  if ("scheduler" in globalThis && "yield" in globalThis.scheduler) {
-    return globalThis.scheduler.yield();
+const ROWS = 500;
+const CHUNK = 100;   // rows to do before handing the thread back
+
+// scheduler.yield() is Chromium-only for now, so fall back to setTimeout.
+const letBrowserIn = () =>
+  globalThis.scheduler?.yield?.() ?? new Promise((r) => setTimeout(r, 0));
+
+async function renderRows() {
+  for (let i = 1; i <= ROWS; i++) {
+    renderOneRow(i);
+
+    if (i % CHUNK === 0) {
+      await letBrowserIn();   // <- the browser gets a turn, right here
+      console.log(\`\${i} rows done - browser had a turn\`);
+    }
   }
-  return new Promise((resolve) => setTimeout(resolve, 0));
+  return \`finished all \${ROWS} rows\`;
 }
 
-function busyWait(ms) {
-  const end = performance.now() + ms;
-  while (performance.now() < end) {}
+// Stand-in for real work: building a row costs a fraction of a millisecond.
+function renderOneRow(i) {
+  let s = 0;
+  for (let k = 0; k < 20000; k++) s += k;
+  return s;
 }
 
-async function* processInChunks(total, perChunk) {
-  const start = performance.now();
-  for (let i = 0; i < total; i += perChunk) {
-    busyWait(20); // stand-in for real work
-    yield \`chunk \${i / perChunk + 1}: items \${i}–\${i + perChunk - 1} at \${Math.round(performance.now() - start)}ms\`;
-    await yieldToMain(); // <- the browser gets a turn right here
-  }
-  return \`done in \${Math.round(performance.now() - start)}ms across \${total / perChunk} chunks\`;
-}
-
-processInChunks(500, 100);`;
+renderRows();`;
 
 export const schedulerYieldDoc: JsDoc = {
   slug: "scheduler-yield",
@@ -221,7 +224,7 @@ await scheduler.yield();`,
     {
       kind: "playground",
       code: yieldPlayground,
-      caption: "Run it, then change `busyWait(20)` or the chunk size and watch the timestamps move.",
+      caption: "Run it — five log lines, one per yield. Now set `CHUNK` to `10` and run again: fifty yields, fifty chances for the browser to step in.",
     },
 
     { kind: "heading", text: "Where you'd use it" },
