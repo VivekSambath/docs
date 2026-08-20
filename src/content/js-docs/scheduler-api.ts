@@ -97,40 +97,37 @@ export const schedulerApiDoc: JsDoc = {
     { kind: "heading", text: "The third one, properly: your 0 becomes 4ms", level: 3 },
     {
       kind: "paragraph",
-      text: "You're at a coffee counter. You order, then ==step aside== so the person behind you can go — polite, costs nothing. But the shop has a rule:",
+      text: "You write `0`. You get `0` — the first four times. From the ==fifth setTimeout in a row==, the browser rounds it up to `4ms` and never tells you.",
     },
     {
-      kind: "callout",
-      variant: "note",
-      text: "*\"Rejoin this queue more than five times and you wait ==4 seconds== before we serve you again.\"* It exists to stop one person cycling through forever and monopolising the barista.",
-    },
-    {
-      kind: "list",
-      icons: ["clock", "split", "priority"],
-      items: [
-        "Step aside ==once or twice==? No penalty. You barely notice the rule.",
-        "But split your order into ==1,000 tiny ones== — one coffee, requeue, one coffee, requeue — and you pay that 4-second wait **996 times**.",
-        "You've now spent ==over an hour standing still==, on top of however long the coffee actually took.",
-      ],
+      kind: "code",
+      language: "js",
+      code: `setTimeout(..., 0)   // hop 1 → 0ms
+setTimeout(..., 0)   // hop 2 → 0ms
+setTimeout(..., 0)   // hop 3 → 0ms
+setTimeout(..., 0)   // hop 4 → 0ms
+setTimeout(..., 0)   // hop 5 → 4ms  ← clamped from here on
+setTimeout(..., 0)   // hop 6 → 4ms
+                     // ...and every hop after that`,
+      caption: "An old browser defence against runaway setTimeout(0) loops pegging the CPU.",
     },
     {
       kind: "paragraph",
-      text: "Browsers do exactly this. `setTimeout` inside `setTimeout` inside `setTimeout` is a ==chain==, and once that chain is **five deep**, the spec says any delay under 4ms gets rounded ==up== to 4ms. It's a deliberate old defence against runaway `setTimeout(0)` loops pegging the CPU — and a chunking loop is one long chain.",
+      text: "One or two hops, you'd never notice. But a chunking loop isn't two hops — ==every chunk schedules the next one==, so it's one long chain, and the cost stacks up:",
     },
     {
       kind: "table",
-      headers: ["At the counter", "In the browser"],
+      headers: ["100,000 items, chunked by…", "Hops", "Wasted on the clamp"],
       rows: [
-        ["Stepping aside to let others order", "`setTimeout(fn, 0)`"],
-        ["Rejoining the queue again and again", "Each chunk scheduling the next one"],
-        ["\"After your 5th time, wait 4 seconds\"", "After nesting level 5, `0` becomes `4ms`"],
-        ["Splitting into 1,000 tiny orders", "Chunking 100,000 items, 100 at a time"],
+        ["1,000 at a time", "100", "0.4 seconds"],
+        ["100 at a time", "1,000", "**4 seconds**"],
+        ["10 at a time", "10,000", "**40 seconds**"],
       ],
     },
     {
       kind: "callout",
       variant: "warning",
-      text: "So do the arithmetic: 100,000 items in chunks of 100 is ==1,000 hops==, and all but the first four cost 4ms of nothing. **Four seconds** where neither your work nor the browser runs. And note which way it cuts — ==the more politely you chunk, the more you pay==. `scheduler.yield()` has no such clamp.",
+      text: "Read that table bottom to top. ==Smaller chunks are supposed to be smoother== — but each one buys another 4ms of nothing, where neither your work nor the browser runs. `scheduler.yield()` has no such clamp.",
     },
 
     { kind: "heading", text: "Old way vs new way", level: 3 },
