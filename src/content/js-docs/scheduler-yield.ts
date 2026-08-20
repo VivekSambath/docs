@@ -1,5 +1,24 @@
 import type { JsDoc } from "../jsDocs";
 
+const houseCleaning = `// Blocking — clean the whole house, nothing else can happen.
+function cleanHouse() {
+  cleanKitchen();
+  cleanLivingRoom();
+  cleanBedroom();
+  cleanBathroom();
+} // phone, door, everything waits ~2 hours
+
+// Chunked — pause between rooms so you can respond.
+async function cleanHouse() {
+  cleanKitchen();
+  await scheduler.yield();   // "is anything ringing?"
+  cleanLivingRoom();
+  await scheduler.yield();
+  cleanBedroom();
+  await scheduler.yield();
+  cleanBathroom();
+} // still ~2 hours total, but never unreachable for long`;
+
 const yieldExample = `async function processLargeArray(items) {
   for (let i = 0; i < items.length; i++) {
     doWork(items[i]);
@@ -124,6 +143,27 @@ await scheduler.yield();`,
       kind: "scheduler-demo",
       demo: "click",
       caption: "Identical work on both sides — only the right one yields. Press Run, then click whichever side says “Running now”.",
+    },
+
+    { kind: "heading", text: "The nuance: it doesn't make anything faster" },
+    {
+      kind: "paragraph",
+      text: "Both sides of that demo took ==about the same time==. That's not a flaw in the demo — it's the whole trade. Splitting work up doesn't speed it up; it usually runs ==slightly slower== overall.",
+    },
+    { kind: "code", language: "js", code: houseCleaning },
+    {
+      kind: "list",
+      icons: ["clock", "responsive", "global"],
+      items: [
+        "**Total time** — ==unchanged, or a little worse==. Each yield costs a trip through the event loop, and the browser spends the gaps you hand it.",
+        "**Responsiveness while it runs** — ==transformed==. The thread is never blocked for longer than one chunk, so clicks and repaints always get a turn.",
+        "**Number of threads** — ==still one==. `yield()` shares the thread you already have; it never adds another.",
+      ],
+    },
+    {
+      kind: "callout",
+      variant: "note",
+      text: "So it isn't \"do the job faster\", it's ==\"do the job without freezing everything else\"==. The house still takes two hours — but you answered the door.",
     },
     {
       kind: "ascii",

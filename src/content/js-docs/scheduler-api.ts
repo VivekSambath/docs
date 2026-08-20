@@ -197,25 +197,7 @@ setTimeout(..., 0)   // hop 6 → 4ms
     },
     {
       kind: "paragraph",
-      text: "One thread, taking turns: your chunk, the browser, your chunk. Which is why the total gets slightly *worse*, never better — every yield costs a trip through the event loop. What you trade is:",
-    },
-    {
-      kind: "table",
-      headers: ["What changes", "Effect of yielding"],
-      rows: [
-        [
-          "Total completion time",
-          "About the same, often ==slightly worse== — yields cost overhead and the browser uses the gaps.",
-        ],
-        [
-          "Responsiveness while it runs",
-          "==Massively better== — the thread is never blocked for longer than one chunk.",
-        ],
-        [
-          "Number of threads",
-          "**Unchanged.** Still one. `yield()` shares the thread you have; it never adds another.",
-        ],
-      ],
+      text: "One thread, taking turns: your chunk, the browser, your chunk. The thread count ==never changes== — and because every yield costs a trip through the event loop, the total gets slightly *worse*, never better. [What you actually trade](#/js-docs/scheduler-yield) is responsiveness for a little total time.",
     },
     {
       kind: "callout",
