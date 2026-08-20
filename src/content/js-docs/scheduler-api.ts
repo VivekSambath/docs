@@ -48,21 +48,17 @@ export const schedulerApiDoc: JsDoc = {
       variant: "note",
       text: "Splitting the work doesn't make it finish sooner — it stops the page ==going dark== while it runs. Same total time, but clicks and repaints get their turn.",
     },
-    {
-      kind: "scheduler-demo",
-      demo: "click",
-      caption: "Press Run, then click both buttons fast. The dot moves only while the page is free.",
-    },
-    { kind: "heading", text: "What we did before: setTimeout(fn, 0)" },
+
+    { kind: "heading", text: "How we've been doing it for twenty years" },
     {
       kind: "paragraph",
-      text: "None of this is new — developers have chunked work this way for ==twenty years==. A zero delay never meant \"run now\"; it meant ==\"let the browser go first\"==. Same idea as yielding, done by hand.",
+      text: "None of this is new. Long before any Scheduler API, the way to unblock a page was `setTimeout(fn, 0)` — and a zero delay never meant \"run now\". It meant ==\"let the browser go first\"==. Same idea as yielding, done by hand.",
     },
     {
       kind: "code",
       language: "js",
       code: oldSchoolChunking,
-      caption: "Swap the `setTimeout` line for `await scheduler.yield()` and you have the modern version — same shape, better queue position.",
+      caption: "Do some work, let go, pick it back up. The modern API keeps this exact shape — it just lands you in a better spot in the queue.",
     },
     {
       kind: "paragraph",

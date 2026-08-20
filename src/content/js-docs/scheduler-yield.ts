@@ -121,6 +121,11 @@ await scheduler.yield();`,
     },
     { kind: "code", language: "js", code: yieldExample },
     {
+      kind: "scheduler-demo",
+      demo: "click",
+      caption: "Identical work on both sides — only the right one yields. Press Run, then click whichever side says “Running now”.",
+    },
+    {
       kind: "ascii",
       art: `                       click arrives
                             |
@@ -182,7 +187,7 @@ await scheduler.yield();`,
     { kind: "heading", text: "Where you'd use it" },
     {
       kind: "paragraph",
-      text: "Both demos run ==real JavaScript on this page's main thread==, with identical work on each side — so the difference you see is real, not simulated.",
+      text: "Two places this comes up constantly. Like the demo above, both run ==real JavaScript on this page's main thread== with identical work on each side — so the difference you see is real, not simulated.",
     },
 
     { kind: "heading", text: "A search box that renders results", level: 3 },
