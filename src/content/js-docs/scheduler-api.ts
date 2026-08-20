@@ -43,34 +43,10 @@ export const schedulerApiDoc: JsDoc = {
       ],
     },
 
-    { kind: "heading", text: "The headphones-on version", level: 3 },
-    {
-      kind: "paragraph",
-      text: "A four-hour refactor. You're also the ==only one== who can approve deploys.",
-    },
-    {
-      kind: "list",
-      icons: ["pause", "split"],
-      items: [
-        "**Headphones on.** Four hours heads-down. The deploy waits the whole time — approving it would have taken ten seconds.",
-        "**Look up between steps.** Same four hours of work, but the deploy goes out ==in a gap==.",
-      ],
-    },
-    {
-      kind: "code",
-      language: "js",
-      code: `async function bigRefactor() {
-  renameEverything();
-  await scheduler.yield();  // anything need me?
-  updateAllImports();
-  await scheduler.yield();
-  fixTheTests();
-}`,
-    },
     {
       kind: "callout",
       variant: "note",
-      text: "Yielding doesn't finish the refactor sooner — it stops you ==going dark== until it's done. Your steps are chunks of work; the deploy is a click waiting to be handled.",
+      text: "Splitting the work doesn't make it finish sooner — it stops the page ==going dark== while it runs. Same total time, but clicks and repaints get their turn.",
     },
     {
       kind: "scheduler-demo",
@@ -86,7 +62,7 @@ export const schedulerApiDoc: JsDoc = {
       kind: "code",
       language: "js",
       code: oldSchoolChunking,
-      caption: "Nearly the same shape as the refactor above — that's the point. Swap the `setTimeout` line for `await scheduler.yield()` and you have the modern version.",
+      caption: "Swap the `setTimeout` line for `await scheduler.yield()` and you have the modern version — same shape, better queue position.",
     },
     {
       kind: "paragraph",
@@ -148,8 +124,8 @@ export const schedulerApiDoc: JsDoc = {
       kind: "list",
       icons: ["split", "label"],
       items: [
-        "`scheduler.yield()` — ==one long job==, split into pieces, so the page can breathe between them. *One refactor, done in steps.*",
-        "`scheduler.postTask()` — ==several separate jobs==, ranked, so the browser knows which matters most. *A morning of tickets, most urgent first.*",
+        "`scheduler.yield()` — ==one long job==, split into pieces, so the page can breathe between them.",
+        "`scheduler.postTask()` — ==several separate jobs==, ranked, so the browser knows which matters most.",
       ],
     },
     {
@@ -187,7 +163,7 @@ export const schedulerApiDoc: JsDoc = {
     },
     {
       kind: "paragraph",
-      text: "Still ==one developer==: refactor, answer Slack, back to the refactor. Nobody got hired. Which is why the total gets slightly *worse*, never better — every yield costs a trip through the event loop. What you trade is:",
+      text: "One thread, taking turns: your chunk, the browser, your chunk. Which is why the total gets slightly *worse*, never better — every yield costs a trip through the event loop. What you trade is:",
     },
     {
       kind: "table",
@@ -210,7 +186,7 @@ export const schedulerApiDoc: JsDoc = {
     {
       kind: "callout",
       variant: "tip",
-      text: "If you want ==true parallelism==, that's **Web Workers** — a teammate on a genuinely separate thread. `yield()` doesn't hire anyone; it makes better use of the one pair of hands you have.",
+      text: "If you want ==true parallelism==, that's **Web Workers** — code on a genuinely separate thread. `yield()` never adds a thread; it makes better use of the one you have.",
     },
     {
       kind: "callout",
