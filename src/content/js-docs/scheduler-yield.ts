@@ -52,18 +52,6 @@ const searchExample = `input.addEventListener("input", async (event) => {
   });
 });`;
 
-const analyticsExample = `// Fire-and-forget telemetry must never outrank a click or an animation frame.
-scheduler.postTask(() => sendAnalyticsBeacon(eventData), {
-  priority: "background",
-});`;
-
-const tableExample = `async function renderRows(rows) {
-  for (let i = 0; i < rows.length; i++) {
-    appendRowToTable(rows[i]);
-    if (i % 50 === 0) await scheduler.yield();
-  }
-}`;
-
 const featureDetect = `// One helper, used everywhere. Feature-detect once, fall back forever.
 async function yieldToMain() {
   if ("scheduler" in globalThis && "yield" in globalThis.scheduler) {
@@ -227,16 +215,10 @@ await scheduler.yield();`,
       caption: "Run it — five log lines, one per yield. Now set `CHUNK` to `10` and run again: fifty yields, fifty chances for the browser to step in.",
     },
 
-    { kind: "heading", text: "Where you'd use it" },
+    { kind: "heading", text: "Where you'd use it: a search box" },
     {
       kind: "paragraph",
-      text: "Two places this comes up constantly. Like the demo above, both run ==real JavaScript on this page's main thread== with identical work on each side — so the difference you see is real, not simulated.",
-    },
-
-    { kind: "heading", text: "A search box that renders results", level: 3 },
-    {
-      kind: "paragraph",
-      text: "The classic case: the user is ==typing==, so they feel every millisecond. Without a yield, each keystroke waits for the last one's rendering to finish.",
+      text: "The classic case, because the user is ==typing== and feels every millisecond. Without a yield, each keystroke waits for the last one's rendering to finish.",
     },
     {
       kind: "comparison",
@@ -294,64 +276,6 @@ async function renderResults(query) {
       text: "In production, use both halves: react to the keystroke at `user-blocking` so the UI responds at once, then render the result list at `user-visible`.",
     },
     { kind: "code", language: "js", code: searchExample, caption: "React at `user-blocking`, render results at `user-visible`." },
-
-    { kind: "heading", text: "A long list that takes a while to build", level: 3 },
-    {
-      kind: "paragraph",
-      text: "Yielding also lets the browser ==paint==. Without it: a blank area, then everything at once. With it: the list fills in as it goes.",
-    },
-    {
-      kind: "scheduler-demo",
-      demo: "table",
-      caption: "Both render 2,000 rows in about the same time — only one shows anything before finishing.",
-    },
-    { kind: "code", language: "js", code: tableExample },
-    {
-      kind: "paragraph",
-      text: "The same shape covers analytics and other fire-and-forget work. Nothing is on screen, so queue it at `background` and it can never outrank a click or a frame.",
-    },
-    { kind: "code", language: "js", code: analyticsExample },
-    {
-      kind: "callout",
-      variant: "tip",
-      text: "Every case on this page is the same move: find the work that hogs the thread, and hand the thread back partway through. What changes between them is only ==which== work, and ==how often== you let go.",
-    },
-
-    { kind: "heading", text: "How to use it — the short version" },
-    {
-      kind: "list",
-      icons: ["search", "split", "label", "shield"],
-      items: [
-        "**Find the slow thing.** In DevTools → Performance, record and look for a long bar on the main thread. Don't guess — ==fix what actually blocks==.",
-        "**One long loop?** Put `await scheduler.yield()` inside it, every N iterations. Start near 50–100 and adjust.",
-        "**Several separate jobs?** Queue each with `scheduler.postTask()` and label it: `user-blocking` for what the user waits on, `background` for what they don't, `user-visible` (the default) for the rest.",
-        "**Always feature-detect**, with `setTimeout(fn, 0)` as the fallback. Support is limited, and the fallback keeps most of the benefit.",
-      ],
-    },
-    {
-      kind: "code",
-      language: "js",
-      code: `// The 90% case, start to finish.
-async function yieldToMain() {
-  if ("scheduler" in globalThis && "yield" in globalThis.scheduler) {
-    return globalThis.scheduler.yield();
-  }
-  return new Promise((resolve) => setTimeout(resolve, 0));
-}
-
-async function processAll(items) {
-  for (let i = 0; i < items.length; i++) {
-    doWork(items[i]);
-    if (i % 50 === 0) await yieldToMain(); // let the browser breathe
-  }
-}`,
-      caption: "Copy this helper into a project and you have the useful part of the API today.",
-    },
-    {
-      kind: "callout",
-      variant: "warning",
-      text: "Don't yield on every iteration. Each yield costs a trip through the event loop, so 10,000 yields turn a fast loop into a slow one. Yield ==every N items==, aiming for slices of about 5–50ms.",
-    },
 
     { kind: "heading", text: "Feature detection and fallbacks" },
     {
