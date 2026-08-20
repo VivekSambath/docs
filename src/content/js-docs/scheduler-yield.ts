@@ -239,9 +239,55 @@ await scheduler.yield();`,
       text: "The classic case: the user is ==typing==, so they feel every millisecond. Without a yield, each keystroke waits for the last one's rendering to finish.",
     },
     {
+      kind: "comparison",
+      before: {
+        label: "Blocking — one long render per key",
+        code: `input.addEventListener("input", (e) => {
+  renderResults(e.target.value);   // ~220ms, uninterruptible
+});
+
+function renderResults(query) {
+  for (const row of matchRows(query)) {
+    appendRow(row);
+  }
+}`,
+        language: "js",
+        points: [
+          "The next keystroke ==cannot land== until this render finishes.",
+          "So typing is capped at **one character per render** — about 4–5 a second.",
+          "The input feels ==stuck==, however fast you type.",
+        ],
+      },
+      after: {
+        label: "Yielding — the same render, in slices",
+        code: `input.addEventListener("input", async (e) => {
+  await renderResults(e.target.value);
+});
+
+async function renderResults(query) {
+  let i = 0;
+  for (const row of matchRows(query)) {
+    appendRow(row);
+    if (++i % 50 === 0) await scheduler.yield();
+  }
+}`,
+        language: "js",
+        points: [
+          "Each `yield` is a gap where the ==next keystroke can arrive==.",
+          "Characters appear as fast as you type them.",
+          "Same total rendering work — it just stops ==holding the door shut==.",
+        ],
+      },
+    },
+    {
       kind: "scheduler-demo",
       demo: "search",
-      caption: "Type fast in both boxes. Same work per keystroke — only the right one yields.",
+      caption: "Type fast in both boxes. Watch the gap between keystrokes: the left box can't go faster than one key per render.",
+    },
+    {
+      kind: "callout",
+      variant: "note",
+      text: "Real code needs one more guard: a keystroke arriving mid-render should ==abandon the render in progress== rather than finish rendering results for a query the user has already moved past. The demo above does this with a run-id check.",
     },
     {
       kind: "paragraph",

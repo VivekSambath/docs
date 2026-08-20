@@ -355,29 +355,56 @@ function ClickDemo() {
  */
 function SearchDemo() {
   const [text, setText] = useState<Record<Side, string>>({ blocking: "", yielding: "" });
-  const [worst, setWorst] = useState<Record<Side, number>>({ blocking: 0, yielding: 0 });
+  /** Fastest key-to-key gap seen, per side — the floor the render imposes. */
+  const [fastestGap, setFastestGap] = useState<Record<Side, number>>({ blocking: 0, yielding: 0 });
   const [log, setLog] = useState<Record<Side, LogEntry[]>>({ blocking: [], yielding: [] });
   const runIdRef = useRef(0);
   // First keystroke per side anchors that side's clock, so the log reads as
   // "how far into my typing", not as raw page uptime.
   const startedAt = useRef<Record<Side, number>>({ blocking: 0, yielding: 0 });
+  /** When the previous keystroke landed, per side — the key-to-key gap. */
+  const lastKeyAt = useRef<Record<Side, number>>({ blocking: 0, yielding: 0 });
 
   const WORK_MS = 220;
 
   async function handleType(side: Side, value: string, lag: number) {
     setText((current) => ({ ...current, [side]: value }));
-    setWorst((current) => ({ ...current, [side]: Math.max(current[side], lag) }));
 
     if (!startedAt.current[side]) startedAt.current[side] = now();
+
+    // What actually hurts here is the gap *between* keystrokes, not the
+    // handler's own delay. You cannot physically type faster than a blocking
+    // render, so each key arrives only once the last render finished and its
+    // event.timeStamp lag reads ~0 — while the typist still waits 220ms per
+    // character. Measuring key-to-key exposes that; measuring lag hides it.
+    const t = now();
+    const sinceLast = lastKeyAt.current[side] ? Math.round(t - lastKeyAt.current[side]) : 0;
+    lastKeyAt.current[side] = t;
+    if (sinceLast) {
+      // Track the *fastest* gap achieved: it's the floor the render imposes.
+      // On the blocking side no amount of fast typing gets under WORK_MS —
+      // that ceiling-as-a-floor is exactly what the demo is showing.
+      setFastestGap((current) => ({
+        ...current,
+        [side]: current[side] === 0 ? sinceLast : Math.min(current[side], sinceLast),
+      }));
+    }
+
     const typed = value.slice(-1) || "⌫";
     const entry = makeEntry(
       startedAt.current[side],
-      lag > 100 ? `"${typed}" appeared ${lag}ms late` : `"${typed}" appeared in ${lag}ms`,
-      lag,
+      sinceLast === 0
+        ? `"${typed}" — first keystroke`
+        : `"${typed}" — ${sinceLast}ms since the last one`,
+      // Colour the line red when the gap is dominated by the render, not by
+      // how fast the reader types.
+      sinceLast > WORK_MS * 0.8 ? sinceLast : undefined,
     );
     // Keep only the last 8 keystrokes: a fast typist would otherwise push the
     // interesting recent lines out of the scroll view.
     setLog((current) => ({ ...current, [side]: [...current[side], entry].slice(-8) }));
+
+    void lag; // kept for the signature; the key-to-key gap is what we report
 
     if (side === "blocking") {
       busyWait(WORK_MS); // one long render per keystroke
@@ -395,29 +422,30 @@ function SearchDemo() {
   }
 
   function verdictFor(side: Side) {
-    const lag = worst[side];
+    const gap = fastestGap[side];
     if (!text[side]) return { tone: "idle" as const, headline: "Type something…" };
     if (side === "blocking") {
       return {
         tone: "bad" as const,
-        headline: lag > 100 ? "Typing feels laggy" : "Keep typing — faster!",
-        detail: `worst keystroke lag: ${lag}ms`,
+        headline: gap ? `Capped at one key every ~${gap}ms` : "Keep typing…",
+        detail: `each keystroke blocks for ${WORK_MS}ms before the next can land`,
       };
     }
     return {
       tone: "good" as const,
-      headline: lag > 100 ? "Still catching up" : "Typing feels instant",
-      detail: `worst keystroke lag: ${lag}ms`,
+      headline: gap ? `Keys landed as fast as ${gap}ms apart` : "Keep typing…",
+      detail: `same ${WORK_MS}ms of work, yielded in 10 slices`,
     };
   }
 
   return (
     <DemoShell
       why="**Why this matters:** a search box that renders results on every keystroke is the classic place this goes wrong — the user is typing, so they feel every millisecond."
-      where="Type quickly in both boxes. Each keystroke does the same amount of rendering work; only the right-hand box yields while doing it."
+      where="Type quickly in both boxes and watch the ==gap between keystrokes==. Same rendering work per key on each side — only the right one yields, so only the right one lets you type at full speed."
       onRun={() => {
         setText({ blocking: "", yielding: "" });
-        setWorst({ blocking: 0, yielding: 0 });
+        setFastestGap({ blocking: 0, yielding: 0 });
+        lastKeyAt.current = { blocking: 0, yielding: 0 };
         setLog({ blocking: [], yielding: [] });
         startedAt.current = { blocking: 0, yielding: 0 };
       }}
